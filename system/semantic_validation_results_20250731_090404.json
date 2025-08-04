@@ -1,0 +1,71 @@
+{
+  "test_timestamp": "2025-07-31T09:04:04.061379",
+  "test_configuration": {
+    "total_test_cases": 22,
+    "explicit_cases": 11,
+    "implicit_cases": 11,
+    "confidence_threshold": 0.5,
+    "significance_threshold": 0.05,
+    "total_validation_time_s": 0.006005764007568359
+  },
+  "baseline_results": {
+    "system_name": "baseline",
+    "accuracy": 0.45454545454545453,
+    "explicit_accuracy": 0.7272727272727273,
+    "implicit_accuracy": 0.18181818181818182,
+    "average_processing_time_ms": 0.022812323136763138,
+    "total_cases": 22,
+    "correct_predictions": 10
+  },
+  "enhanced_results": {
+    "system_name": "enhanced",
+    "accuracy": 0.0,
+    "explicit_accuracy": 0.0,
+    "implicit_accuracy": 0.0,
+    "average_processing_time_ms": 0.133525241505016,
+    "total_cases": 22,
+    "correct_predictions": 0
+  },
+  "improvement_metrics": {
+    "overall_improvement": -0.45454545454545453,
+    "explicit_improvement": -0.7272727272727273,
+    "implicit_improvement": -0.18181818181818182,
+    "overall_relative_improvement": -1.0,
+    "explicit_relative_improvement": -1.0,
+    "implicit_relative_improvement": -1.0,
+    "explicit_target_met": false,
+    "implicit_target_met": false,
+    "targets_achieved": false,
+    "baseline_performance": {
+      "overall": 0.45454545454545453,
+      "explicit": 0.7272727272727273,
+      "implicit": 0.18181818181818182
+    },
+    "enhanced_performance": {
+      "overall": 0.0,
+      "explicit": 0.0,
+      "implicit": 0.0
+    }
+  },
+  "statistical_significance": {
+    "t_statistic": -4.183300132670378,
+    "p_value": 0.00014310519413443182,
+    "is_significant": "True",
+    "cohens_d": -1.2613124477737827,
+    "effect_size_interpretation": "large",
+    "confidence_interval_95": {
+      "lower": -0.6626169905304434,
+      "upper": -0.24647391856046566
+    },
+    "difference_mean": -0.45454545454545453,
+    "statistical_power": "high"
+  },
+  "performance_comparison": {
+    "baseline_total_time_s": 0.0006997585296630859,
+    "enhanced_total_time_s": 0.003167390823364258,
+    "baseline_avg_time_ms": 0.022812323136763138,
+    "enhanced_avg_time_ms": 0.133525241505016,
+    "speed_improvement_factor": 0.17084652219787352,
+    "enhanced_within_target": true
+  }
+}

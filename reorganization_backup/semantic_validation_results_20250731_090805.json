@@ -1,0 +1,71 @@
+{
+  "test_timestamp": "2025-07-31T09:08:05.197404",
+  "test_configuration": {
+    "total_test_cases": 22,
+    "explicit_cases": 11,
+    "implicit_cases": 11,
+    "confidence_threshold": 0.5,
+    "significance_threshold": 0.05,
+    "total_validation_time_s": 0.42446041107177734
+  },
+  "baseline_results": {
+    "system_name": "baseline",
+    "accuracy": 0.45454545454545453,
+    "explicit_accuracy": 0.7272727272727273,
+    "implicit_accuracy": 0.18181818181818182,
+    "average_processing_time_ms": 0.022476369684392757,
+    "total_cases": 22,
+    "correct_predictions": 10
+  },
+  "enhanced_results": {
+    "system_name": "enhanced",
+    "accuracy": 0.5,
+    "explicit_accuracy": 0.7272727272727273,
+    "implicit_accuracy": 0.2727272727272727,
+    "average_processing_time_ms": 19.098877906799316,
+    "total_cases": 22,
+    "correct_predictions": 11
+  },
+  "improvement_metrics": {
+    "overall_improvement": 0.04545454545454547,
+    "explicit_improvement": 0.0,
+    "implicit_improvement": 0.09090909090909088,
+    "overall_relative_improvement": 0.10000000000000009,
+    "explicit_relative_improvement": 0.0,
+    "implicit_relative_improvement": 0.4999999999999998,
+    "explicit_target_met": false,
+    "implicit_target_met": false,
+    "targets_achieved": false,
+    "baseline_performance": {
+      "overall": 0.45454545454545453,
+      "explicit": 0.7272727272727273,
+      "implicit": 0.18181818181818182
+    },
+    "enhanced_performance": {
+      "overall": 0.5,
+      "explicit": 0.7272727272727273,
+      "implicit": 0.2727272727272727
+    }
+  },
+  "statistical_significance": {
+    "t_statistic": 0.2951896499889198,
+    "p_value": 0.7693033776524804,
+    "is_significant": "False",
+    "cohens_d": 0.08900302827359864,
+    "effect_size_interpretation": "negligible",
+    "confidence_interval_95": {
+      "lower": -0.2494154420682575,
+      "upper": 0.34032453297734844
+    },
+    "difference_mean": 0.04545454545454547,
+    "statistical_power": "low"
+  },
+  "performance_comparison": {
+    "baseline_total_time_s": 0.0007212162017822266,
+    "enhanced_total_time_s": 0.4205188751220703,
+    "baseline_avg_time_ms": 0.022476369684392757,
+    "enhanced_avg_time_ms": 19.098877906799316,
+    "speed_improvement_factor": 0.001176842419438214,
+    "enhanced_within_target": true
+  }
+}

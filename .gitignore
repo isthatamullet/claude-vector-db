@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+venv/
+
+# ChromaDB Database Files (large, user-specific)
+chroma_db/
+*.sqlite3
+*.db
+
+# Logs
+*.log
+logs/
+
+# Backups (large, user-specific)
+backups/
+*.backup
+*.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary debugging/test files
+debug_*.py
+test_*.py
+temp/
+tmp/
+*.tmp
+
+# Keep important test files that are part of the system
+!test_all_sessions.py
+!test_conversation_analysis.py
+
+# Environment variables
+.env
+.env.local
+
+# Personal notes that shouldn't be public
+tylers-*.txt
+*-notes.txt

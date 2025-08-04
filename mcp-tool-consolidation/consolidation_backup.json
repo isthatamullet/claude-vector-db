@@ -1,0 +1,111 @@
+{
+  "backup_metadata": {
+    "timestamp": "2025-08-02T08:46:00Z",
+    "reason": "Pre-consolidation backup for PRP-2 safe cleanup phase",
+    "original_tool_count": 36,
+    "target_tool_count": 33,
+    "removal_phase": "PRP-2-SAFE-CLEANUP"
+  },
+  
+  "current_tool_state": {
+    "total_active_tools": 36,
+    "total_disabled_tools": 1,
+    "mcp_server_file": "/home/user/.claude-vector-db-enhanced/mcp/mcp_server.py",
+    "verification_command": "grep -c '@mcp.tool()' mcp/mcp_server.py"
+  },
+  
+  "tools_targeted_for_removal": [
+    {
+      "tool_name": "get_enhanced_statistics",
+      "line_number": 1957,
+      "status": "active_but_broken",
+      "issue": "Hardcoded query 'sample analysis' always returns 0 results",
+      "replacement": "smart_metadata_sync_status",
+      "calling_code": ["get_enhancement_analytics_dashboard line 2066"],
+      "removal_strategy": "complete_removal_with_inline_replacement"
+    },
+    {
+      "tool_name": "get_file_watcher_status", 
+      "line_number": 877,
+      "status": "already_disabled",
+      "issue": "Legacy file watcher system, replaced by hooks-based indexing",
+      "replacement": "hooks_based_indexing",
+      "calling_code": [],
+      "removal_strategy": "complete_code_removal"
+    },
+    {
+      "tool_name": "get_vector_db_health",
+      "line_number": 920,
+      "status": "active_but_redundant", 
+      "issue": "Superseded by get_system_health_report",
+      "replacement": "get_system_health_report",
+      "calling_code": ["40+ external references per PRP-1 analysis"],
+      "removal_strategy": "compatibility_layer_first"
+    }
+  ],
+  
+  "complete_tool_inventory": [
+    {"line": 270, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 408, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 582, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 642, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 877, "status": "disabled", "decorator": "# @mcp.tool()  # DISABLED - deprecated file watcher system"},
+    {"line": 920, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 1177, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 1347, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 1697, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 1735, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 1816, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 1864, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 1909, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 1957, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2045, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2144, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2220, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2267, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2323, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2368, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2431, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2519, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2602, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2756, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2791, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2922, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 2995, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 3171, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 3238, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 3295, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 3384, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 3453, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 3531, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 3654, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 3773, "status": "active", "decorator": "@mcp.tool()"},
+    {"line": 3850, "status": "active", "decorator": "@mcp.tool()"}
+  ],
+  
+  "rollback_procedures": {
+    "immediate_rollback": "git restore mcp/mcp_server.py (if git tracked)",
+    "manual_rollback": "Restore from /home/user/.claude-vector-db-enhanced.backup-20250802-075129/",
+    "validation_after_rollback": [
+      "grep -c '@mcp.tool()' mcp/mcp_server.py should return 36",
+      "./venv/bin/python mcp/mcp_server.py should start without errors",
+      "./system/health_dashboard.sh should pass all checks"
+    ]
+  },
+  
+  "success_criteria": {
+    "tool_count_after_removal": 33,
+    "functionality_preserved": true,
+    "performance_maintained": "Search response times <500ms",
+    "external_dependencies": "All external integrations continue working",
+    "documentation_updated": true
+  },
+  
+  "verification_commands": {
+    "tool_count": "grep -c '@mcp.tool()' mcp/mcp_server.py",
+    "syntax_check": "ruff check mcp/mcp_server.py",
+    "type_check": "mypy mcp/mcp_server.py",
+    "mcp_server_start": "./venv/bin/python mcp/mcp_server.py",
+    "health_check": "./system/health_dashboard.sh"
+  }
+}

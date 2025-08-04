@@ -1,0 +1,14 @@
+{
+  "update_type": "missing_enhancement_fields",
+  "total_scanned": 21911,
+  "issues_found": 21911,
+  "fixes_applied": 20980,
+  "errors_encountered": 0,
+  "execution_time_seconds": 7.178343296051025,
+  "dry_run": true,
+  "timestamp": "2025-07-29T07:42:37.522453",
+  "details": {
+    "batch_size": 100,
+    "unique_entries_affected": 20980
+  }
+}

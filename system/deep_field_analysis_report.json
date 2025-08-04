@@ -1,0 +1,122 @@
+{
+  "analysis_timestamp": "2025-08-01T07:42:43.780191",
+  "total_entries": 34445,
+  "field_analyses": [
+    {
+      "field_name": "solution_category",
+      "total_entries": 34445,
+      "populated_count": 8540,
+      "populated_percentage": 24.79314849760488,
+      "empty_count": 25888,
+      "null_count": 17,
+      "meaningful_samples": [
+        "code_fix",
+        "debugging_step",
+        "debugging_step",
+        "approach_suggestion",
+        "code_fix"
+      ],
+      "issues_found": true
+    },
+    {
+      "field_name": "previous_message_id",
+      "total_entries": 34445,
+      "populated_count": 461,
+      "populated_percentage": 1.3383655102337058,
+      "empty_count": 33967,
+      "null_count": 17,
+      "meaningful_samples": [
+        "399b23cd-ba9b-436d-8eec-e8c9e8aaaf17_assistant_166",
+        "399b23cd-ba9b-436d-8eec-e8c9e8aaaf17_assistant_169",
+        "5fcdb047-30ec-48b9-b718-3210415843d0_user_1",
+        "5fcdb047-30ec-48b9-b718-3210415843d0_user_5",
+        "5fcdb047-30ec-48b9-b718-3210415843d0_user_7"
+      ],
+      "issues_found": true
+    },
+    {
+      "field_name": "next_message_id",
+      "total_entries": 34445,
+      "populated_count": 0,
+      "populated_percentage": 0.0,
+      "empty_count": 34428,
+      "null_count": 17,
+      "meaningful_samples": [],
+      "issues_found": true
+    },
+    {
+      "field_name": "related_solution_id",
+      "total_entries": 34445,
+      "populated_count": 191,
+      "populated_percentage": 0.5545071853679779,
+      "empty_count": 34237,
+      "null_count": 17,
+      "meaningful_samples": [
+        "399b23cd-ba9b-436d-8eec-e8c9e8aaaf17_assistant_166",
+        "399b23cd-ba9b-436d-8eec-e8c9e8aaaf17_assistant_169",
+        "5fcdb047-30ec-48b9-b718-3210415843d0_assistant_183",
+        "5fcdb047-30ec-48b9-b718-3210415843d0_assistant_186",
+        "5fcdb047-30ec-48b9-b718-3210415843d0_assistant_214"
+      ],
+      "issues_found": true
+    },
+    {
+      "field_name": "feedback_message_id",
+      "total_entries": 34445,
+      "populated_count": 0,
+      "populated_percentage": 0.0,
+      "empty_count": 34428,
+      "null_count": 17,
+      "meaningful_samples": [],
+      "issues_found": true
+    },
+    {
+      "field_name": "user_feedback_sentiment",
+      "total_entries": 34445,
+      "populated_count": 73,
+      "populated_percentage": 0.21193206561184497,
+      "empty_count": 34355,
+      "null_count": 17,
+      "meaningful_samples": [
+        "positive",
+        "positive",
+        "positive",
+        "positive",
+        "positive"
+      ],
+      "issues_found": true
+    },
+    {
+      "field_name": "troubleshooting_context_score",
+      "total_entries": 34445,
+      "populated_count": 0,
+      "populated_percentage": 0.0,
+      "empty_count": 0,
+      "null_count": 34445,
+      "meaningful_samples": [],
+      "issues_found": true
+    },
+    {
+      "field_name": "realtime_learning_boost",
+      "total_entries": 34445,
+      "populated_count": 0,
+      "populated_percentage": 0.0,
+      "empty_count": 0,
+      "null_count": 34445,
+      "meaningful_samples": [],
+      "issues_found": true
+    }
+  ],
+  "critical_issues": [
+    "previous_message_id: 1.3%",
+    "next_message_id: 0.0%",
+    "related_solution_id: 0.6%",
+    "feedback_message_id: 0.0%",
+    "user_feedback_sentiment: 0.2%",
+    "troubleshooting_context_score: 0.0%",
+    "realtime_learning_boost: 0.0%"
+  ],
+  "moderate_issues": [
+    "solution_category: 24.8%"
+  ]
+}

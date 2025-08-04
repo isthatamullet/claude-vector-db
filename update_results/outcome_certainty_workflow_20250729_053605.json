@@ -1,0 +1,27 @@
+{
+  "workflow_start": "2025-07-29T05:35:58.000814",
+  "dry_run": true,
+  "validate": true,
+  "steps": {
+    "scan": {
+      "total_issues": 35,
+      "issues_by_type": {
+        "outcome_certainty_missing": 35
+      },
+      "success": true
+    },
+    "fix": {
+      "fixes_applied": 35,
+      "errors": 0,
+      "execution_time": 0.006471157073974609,
+      "rollback_snapshot": null,
+      "success": true
+    },
+    "validation": {
+      "skipped": "dry_run_mode",
+      "success": true
+    }
+  },
+  "overall_success": true,
+  "workflow_time": 7.213557243347168
+}

@@ -1,0 +1,212 @@
+{
+  "analysis_date": "2025-08-01T07:23:05.461297",
+  "total_entries": 34434,
+  "field_coverage": {
+    "id": {
+      "count": 0,
+      "percentage": 0.0
+    },
+    "type": {
+      "count": 34434,
+      "percentage": 100.0
+    },
+    "project_name": {
+      "count": 34434,
+      "percentage": 100.0
+    },
+    "project_path": {
+      "count": 34434,
+      "percentage": 100.0
+    },
+    "timestamp": {
+      "count": 34241,
+      "percentage": 99.43950746355347
+    },
+    "timestamp_unix": {
+      "count": 34434,
+      "percentage": 100.0
+    },
+    "session_id": {
+      "count": 34434,
+      "percentage": 100.0
+    },
+    "file_name": {
+      "count": 34434,
+      "percentage": 100.0
+    },
+    "has_code": {
+      "count": 34434,
+      "percentage": 100.0
+    },
+    "tools_used": {
+      "count": 34434,
+      "percentage": 100.0
+    },
+    "content_length": {
+      "count": 34434,
+      "percentage": 100.0
+    },
+    "detected_topics": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "primary_topic": {
+      "count": 17269,
+      "percentage": 50.15101353313586
+    },
+    "topic_confidence": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "solution_quality_score": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "is_solution_attempt": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "solution_category": {
+      "count": 8529,
+      "percentage": 24.76912354068653
+    },
+    "has_success_markers": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "has_quality_indicators": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "previous_message_id": {
+      "count": 451,
+      "percentage": 1.3097519893128884
+    },
+    "next_message_id": {
+      "count": 0,
+      "percentage": 0.0
+    },
+    "related_solution_id": {
+      "count": 191,
+      "percentage": 0.5546843236336179
+    },
+    "feedback_message_id": {
+      "count": 0,
+      "percentage": 0.0
+    },
+    "user_feedback_sentiment": {
+      "count": 62,
+      "percentage": 0.18005459720044142
+    },
+    "is_validated_solution": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "is_refuted_attempt": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "validation_strength": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "outcome_certainty": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "is_feedback_to_solution": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "message_sequence_position": {
+      "count": 34417,
+      "percentage": 99.95063019109021
+    },
+    "troubleshooting_context_score": {
+      "count": 0,
+      "percentage": 0.0
+    },
+    "realtime_learning_boost": {
+      "count": 0,
+      "percentage": 0.0
+    }
+  },
+  "sample_entries": [
+    {
+      "has_code": false,
+      "timestamp": "2025-07-29T09:40:50.667Z",
+      "timestamp_unix": 1753783027.673935,
+      "type": "assistant",
+      "project_path": "/home/user/.claude-vector-db-enhanced",
+      "content_hash": "0e41e926f70c35fa2fd3aa9efe824acc",
+      "tools_used": "[]",
+      "session_id": "f8a4b940-4909-44f7-9196-4ed1342872dc",
+      "content_length": 114,
+      "project_name": ".claude-vector-db-enhanced",
+      "file_name": "f8a4b940-4909-44f7-9196-4ed1342872dc.jsonl"
+    },
+    {
+      "content_length": 171,
+      "file_name": "f8a4b940-4909-44f7-9196-4ed1342872dc.jsonl",
+      "session_id": "f8a4b940-4909-44f7-9196-4ed1342872dc",
+      "has_code": false,
+      "content_hash": "6cec73f4fcab1106424d661d3fc72953",
+      "type": "assistant",
+      "project_path": "/home/user/.claude-vector-db-enhanced",
+      "timestamp_unix": 1753783027.674819,
+      "timestamp": "2025-07-29T09:40:50.667Z",
+      "tools_used": "[]",
+      "project_name": ".claude-vector-db-enhanced"
+    },
+    {
+      "solution_category": "",
+      "has_quality_indicators": false,
+      "project_path": "/home/user/.claude/projects",
+      "is_refuted_attempt": false,
+      "primary_topic": "",
+      "feedback_message_id": "",
+      "is_validated_solution": false,
+      "next_message_id": "",
+      "content_length": 0,
+      "project_name": "projects",
+      "has_code": false,
+      "message_sequence_position": 8,
+      "topic_confidence": 0.0,
+      "content_hash": "60dc68143de0d9062b36746598f9a738",
+      "timestamp_unix": 1753782050.667,
+      "related_solution_id": "",
+      "is_feedback_to_solution": false,
+      "type": "assistant",
+      "timestamp": "2025-07-29T09:40:50.667Z",
+      "validation_strength": 0.0,
+      "is_solution_attempt": false,
+      "session_id": "f8a4b940-4909-44f7-9196-4ed1342872dc",
+      "detected_topics": "{}",
+      "user_feedback_sentiment": "",
+      "has_success_markers": false,
+      "previous_message_id": "",
+      "tools_used": "[]",
+      "file_name": "f8a4b940-4909-44f7-9196-4ed1342872dc.jsonl",
+      "outcome_certainty": 0.0,
+      "solution_quality_score": 1.0
+    }
+  ],
+  "summary": {
+    "basic_fields_average": 90.85813704214122,
+    "enhanced_fields_average": 60.77962810843104,
+    "overall_health": 75.81888257528612,
+    "critical_issues": [
+      "id"
+    ],
+    "enhancement_gaps": [
+      "solution_category",
+      "previous_message_id",
+      "next_message_id",
+      "related_solution_id",
+      "feedback_message_id",
+      "user_feedback_sentiment",
+      "troubleshooting_context_score",
+      "realtime_learning_boost"
+    ]
+  }
+}
