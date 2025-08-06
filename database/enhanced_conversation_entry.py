@@ -111,6 +111,12 @@ class EnhancedConversationEntry(ConversationEntry):
     troubleshooting_context_score: float = 1.0  # Troubleshooting relevance boost factor
     realtime_learning_boost: float = 1.0        # Real-time learning boost factor
     
+    # Back-fill system fields (proven working in backup database)
+    backfill_timestamp: Optional[str] = None     # ISO timestamp when back-fill processing occurred
+    backfill_processed: bool = False             # Flag indicating successful back-fill processing
+    relationship_confidence: float = 1.0         # Confidence score for conversation chain relationships
+    content_hash: Optional[str] = None           # MD5 hash for content deduplication
+    
     def __post_init__(self):
         """Validate and auto-calculate enhancement fields"""
         
@@ -257,6 +263,12 @@ class EnhancedConversationEntry(ConversationEntry):
             "related_solution_id": safe_value(self.related_solution_id),
             "feedback_message_id": safe_value(self.feedback_message_id),
             "solution_category": safe_value(self.solution_category),
+            
+            # Back-fill system fields (proven working)
+            "backfill_timestamp": safe_value(self.backfill_timestamp),
+            "backfill_processed": self.backfill_processed,
+            "relationship_confidence": self.relationship_confidence,
+            "content_hash": safe_value(self.content_hash),
         }
         
         # Combine and return

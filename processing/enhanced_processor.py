@@ -28,6 +28,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+# Import central logging
+from system.central_logging import VectorDatabaseLogger, ProcessingTimer
+
 # Import enhanced context functions
 from database.enhanced_context import (
     detect_conversation_topics,
@@ -41,7 +44,7 @@ from database.enhanced_context import (
     TROUBLESHOOTING_INDICATORS
 )
 
-from database.enhanced_conversation_entry import EnhancedConversationEntry
+from database.enhanced_conversation_entry import EnhancedConversationEntry, SemanticValidationFields
 
 # Import optimized semantic validation components
 from processing.multimodal_analysis_pipeline import MultiModalAnalysisPipeline
@@ -88,8 +91,12 @@ class UnifiedEnhancementProcessor:
             suppress_init_logging: Suppress detailed initialization logging
             shared_embedding_model: Pre-initialized shared model (optimization)
         """
+        # Initialize central logging
+        self.logger = VectorDatabaseLogger("enhanced_processor")
+        
         if not suppress_init_logging:
             logger.info("🔧 Initializing UnifiedEnhancementProcessor")
+            self.logger.logger.info("🔧 Initializing UnifiedEnhancementProcessor with shared model optimization")
         
         # Get or use shared embedding model for all sub-components
         if shared_embedding_model is not None:
@@ -187,6 +194,9 @@ class UnifiedEnhancementProcessor:
             timestamp = entry_data.get('timestamp', datetime.now().isoformat())
             timestamp_unix = entry_data.get('timestamp_unix', None)
             
+            # Log entry processing start
+            self.logger.log_entry_processing(entry_id, "started", {"content_length": len(content), "type": entry_type})
+            
             # Basic metadata
             project_path = entry_data.get('project_path', '/home/user')
             project_name = entry_data.get('project_name', 'unknown')
@@ -206,7 +216,7 @@ class UnifiedEnhancementProcessor:
             
             # Enhancement 2: Solution Quality Analysis
             solution_quality_score = calculate_solution_quality_score(content, entry_data)
-            is_solution = solution_quality_score > 1.0  # Threshold for solution identification
+            is_solution = is_solution_attempt(content)  # Use actual solution detection function
             solution_category = classify_solution_type(content, entry_data)
             
             if is_solution:
@@ -218,6 +228,9 @@ class UnifiedEnhancementProcessor:
             is_validated_solution = False
             is_refuted_attempt = False
             
+            # Initialize semantic validation fields
+            semantic_validation = SemanticValidationFields()
+            
             if self._semantic_validation_available and self.multimodal_pipeline:
                 try:
                     # Use advanced multimodal feedback analysis
@@ -227,6 +240,29 @@ class UnifiedEnhancementProcessor:
                     
                     feedback_sentiment = multimodal_result.semantic_sentiment
                     validation_strength = multimodal_result.semantic_confidence
+                    
+                    # Populate semantic validation fields from multimodal result
+                    semantic_validation.semantic_sentiment = multimodal_result.semantic_sentiment
+                    semantic_validation.semantic_confidence = multimodal_result.semantic_confidence
+                    semantic_validation.semantic_method = "multi_modal"
+                    semantic_validation.positive_similarity = getattr(multimodal_result, 'positive_similarity', 0.0)
+                    semantic_validation.negative_similarity = getattr(multimodal_result, 'negative_similarity', 0.0)
+                    semantic_validation.partial_similarity = getattr(multimodal_result, 'partial_similarity', 0.0)
+                    semantic_validation.technical_domain = getattr(multimodal_result, 'technical_domain', None)
+                    semantic_validation.technical_confidence = getattr(multimodal_result, 'technical_confidence', 0.0)
+                    semantic_validation.complex_outcome_detected = getattr(multimodal_result, 'complex_outcome_detected', False)
+                    semantic_validation.pattern_vs_semantic_agreement = getattr(multimodal_result, 'pattern_vs_semantic_agreement', 0.0)
+                    semantic_validation.primary_analysis_method = "multi_modal"
+                    semantic_validation.requires_manual_review = getattr(multimodal_result, 'requires_manual_review', False)
+                    
+                    # Store complex data as JSON strings
+                    import json
+                    semantic_validation.best_matching_patterns = json.dumps(getattr(multimodal_result, 'best_matching_patterns', []))
+                    semantic_validation.semantic_analysis_details = json.dumps({
+                        'processing_time_ms': getattr(multimodal_result, 'processing_time_ms', 0.0),
+                        'method': multimodal_result.semantic_sentiment,
+                        'confidence': multimodal_result.semantic_confidence
+                    })
                     
                     # Determine validation status based on confidence and sentiment
                     if validation_strength > 0.7:
@@ -243,11 +279,23 @@ class UnifiedEnhancementProcessor:
                     basic_feedback = analyze_feedback_sentiment(content, entry_data)
                     feedback_sentiment = basic_feedback.get('user_feedback_sentiment', '')
                     validation_strength = basic_feedback.get('validation_strength', 0.0)
+                    
+                    # Set basic semantic validation fields
+                    semantic_validation.semantic_sentiment = feedback_sentiment
+                    semantic_validation.semantic_confidence = abs(validation_strength)
+                    semantic_validation.semantic_method = "pattern_based"
+                    semantic_validation.primary_analysis_method = "pattern"
             else:
                 # Use basic feedback analysis
                 basic_feedback = analyze_feedback_sentiment(content, entry_data)
                 feedback_sentiment = basic_feedback.get('user_feedback_sentiment', '')
                 validation_strength = basic_feedback.get('validation_strength', 0.0)
+                
+                # Set basic semantic validation fields
+                semantic_validation.semantic_sentiment = feedback_sentiment
+                semantic_validation.semantic_confidence = abs(validation_strength)
+                semantic_validation.semantic_method = "pattern_based"
+                semantic_validation.primary_analysis_method = "pattern"
             
             # Enhancement 4: Adjacency Analysis (Conversation Chains)
             previous_message_id = ""
@@ -280,7 +328,7 @@ class UnifiedEnhancementProcessor:
             if is_validated_solution or is_refuted_attempt:
                 self.stats['enhancement_breakdown']['validation_patterns_learned'] += 1
             
-            # Create enhanced conversation entry
+            # Create enhanced conversation entry with complete semantic validation
             enhanced_entry = EnhancedConversationEntry(
                 id=entry_id,
                 content=content,
@@ -300,6 +348,7 @@ class UnifiedEnhancementProcessor:
                 primary_topic=primary_topic,
                 topic_confidence=topic_confidence,
                 solution_quality_score=solution_quality_score,
+                is_solution_attempt=is_solution,
                 is_validated_solution=is_validated_solution,
                 is_refuted_attempt=is_refuted_attempt,
                 user_feedback_sentiment=feedback_sentiment,
@@ -310,7 +359,10 @@ class UnifiedEnhancementProcessor:
                 related_solution_id=related_solution_id,
                 feedback_message_id=feedback_message_id,
                 troubleshooting_context_score=troubleshooting_context_score,
-                realtime_learning_boost=realtime_learning_boost
+                realtime_learning_boost=realtime_learning_boost,
+                
+                # NEW: Complete semantic validation fields
+                semantic_validation=semantic_validation
             )
             
             # Update performance statistics
@@ -321,10 +373,19 @@ class UnifiedEnhancementProcessor:
                          (self.stats['entries_processed'] - 1) + processing_time_ms)
             self.stats['average_processing_time_ms'] = total_time / self.stats['entries_processed']
             
+            # Log successful processing
+            self.logger.log_entry_processing(entry_id, "success", {
+                "processing_time_ms": processing_time_ms,
+                "enhancements_applied": 7,
+                "topic_detected": bool(primary_topic),
+                "solution_detected": bool(is_solution_attempt)
+            })
+            
             return enhanced_entry
             
         except Exception as e:
             logger.error(f"Error processing conversation entry {entry_data.get('id', 'unknown')}: {e}")
+            self.logger.log_error("entry_processing", e, {"entry_id": entry_data.get('id', 'unknown')})
             
             # Return minimal enhanced entry on error
             return EnhancedConversationEntry(
@@ -346,6 +407,7 @@ class UnifiedEnhancementProcessor:
                 primary_topic="",
                 topic_confidence=0.0,
                 solution_quality_score=1.0,
+                is_solution_attempt=False,
                 is_validated_solution=False,
                 is_refuted_attempt=False,
                 user_feedback_sentiment="",
@@ -356,7 +418,10 @@ class UnifiedEnhancementProcessor:
                 related_solution_id="",
                 feedback_message_id="",
                 troubleshooting_context_score=1.0,
-                realtime_learning_boost=1.0
+                realtime_learning_boost=1.0,
+                
+                # Default semantic validation fields
+                semantic_validation=SemanticValidationFields()
             )
     
     def get_processor_stats(self) -> Dict[str, Any]:

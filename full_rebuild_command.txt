@@ -1,0 +1,1 @@
+cd /home/user/.claude-vector-db-enhanced && rm -rf chroma_db && ./venv/bin/python processing/run_full_sync_orchestrated.py --rebuild-from-scratch --log-level INFO

@@ -1,0 +1,188 @@
+{
+  "verification_timestamp": "2025-08-05T23:55:54.577890",
+  "success_criteria": {
+    "entry_count": {
+      "database_entries": 43584,
+      "jsonl_source_entries": 0,
+      "difference": 43584,
+      "ratio_percent": 0,
+      "success": false,
+      "target": "\u00b1100 entries from JSONL source"
+    },
+    "field_coverage": {
+      "total_unique_fields": 47,
+      "enhanced_fields": 36,
+      "entries_with_30_plus_fields": 1000,
+      "percentage_30_plus": 100.0,
+      "success": true,
+      "target": "30+ fields per entry, 95%+ coverage"
+    },
+    "conversation_chains": {
+      "primary_field_coverage": 99.6,
+      "all_field_analysis": {
+        "previous_message_id": {
+          "populated_count": 996,
+          "percentage": 99.6
+        },
+        "next_message_id": {
+          "populated_count": 997,
+          "percentage": 99.7
+        },
+        "message_sequence_position": {
+          "populated_count": 0,
+          "percentage": 0.0
+        },
+        "related_solution_id": {
+          "populated_count": 0,
+          "percentage": 0.0
+        },
+        "feedback_message_id": {
+          "populated_count": 0,
+          "percentage": 0.0
+        }
+      },
+      "success": true,
+      "target": ">90% previous_message_id coverage"
+    },
+    "enhanced_metadata": {
+      "topic_detection_percentage": 70.5,
+      "solution_quality_percentage": 100.0,
+      "field_percentages": {
+        "detected_topics": 70.5,
+        "solution_quality_score": 100.0,
+        "is_solution_attempt": 0.0,
+        "user_feedback_sentiment": 100.0,
+        "primary_topic": 70.5
+      },
+      "topic_success": true,
+      "solution_quality_success": true,
+      "target_topic": ">70% topic detection",
+      "target_solution": ">95% solution quality"
+    },
+    "no_duplicates": {
+      "total_entries_checked": 1000,
+      "unique_hashes": 357,
+      "duplicate_count": 643,
+      "success": false,
+      "target": "Zero duplicates"
+    },
+    "search_performance": {
+      "average_search_time_ms": 521.6856479644775,
+      "max_search_time_ms": 801.5463352203369,
+      "search_errors": 0,
+      "success": false,
+      "target": "<500ms average response time"
+    }
+  },
+  "detailed_analysis": {
+    "field_list": [
+      "has_code",
+      "semantic_method",
+      "is_feedback_to_solution",
+      "topic_confidence",
+      "outcome_certainty",
+      "solution_quality_score",
+      "partial_similarity",
+      "type",
+      "timestamp",
+      "previous_message_id",
+      "solution_category",
+      "content_hash",
+      "positive_similarity",
+      "technical_domain",
+      "complex_outcome_detected",
+      "primary_topic",
+      "primary_analysis_method",
+      "is_refuted_attempt",
+      "best_matching_patterns",
+      "validation_strength",
+      "relationship_confidence",
+      "pattern_vs_semantic_agreement",
+      "semantic_sentiment",
+      "has_quality_indicators",
+      "next_message_id",
+      "timestamp_unix",
+      "negative_similarity",
+      "technical_confidence",
+      "tools_used",
+      "feedback_message_id",
+      "semantic_confidence",
+      "project_name",
+      "is_solution_attempt",
+      "backfill_timestamp",
+      "message_sequence_position",
+      "detected_topics",
+      "backfill_processed",
+      "requires_manual_review",
+      "content_length",
+      "session_id",
+      "user_feedback_sentiment",
+      "semantic_analysis_details",
+      "has_success_markers",
+      "file_name",
+      "project_path",
+      "is_validated_solution",
+      "related_solution_id"
+    ],
+    "field_population": {
+      "has_code": 1000,
+      "semantic_method": 1000,
+      "is_feedback_to_solution": 1000,
+      "topic_confidence": 1000,
+      "outcome_certainty": 1000,
+      "solution_quality_score": 1000,
+      "partial_similarity": 1000,
+      "type": 1000,
+      "timestamp": 1000,
+      "previous_message_id": 1000,
+      "solution_category": 1000,
+      "content_hash": 1000,
+      "positive_similarity": 1000,
+      "technical_domain": 1000,
+      "complex_outcome_detected": 1000,
+      "primary_topic": 1000,
+      "primary_analysis_method": 1000,
+      "is_refuted_attempt": 1000,
+      "best_matching_patterns": 1000,
+      "validation_strength": 1000,
+      "relationship_confidence": 1000,
+      "pattern_vs_semantic_agreement": 1000,
+      "semantic_sentiment": 1000,
+      "has_quality_indicators": 1000,
+      "next_message_id": 1000,
+      "timestamp_unix": 1000,
+      "negative_similarity": 1000,
+      "technical_confidence": 1000,
+      "tools_used": 1000,
+      "feedback_message_id": 1000,
+      "semantic_confidence": 1000,
+      "project_name": 1000,
+      "is_solution_attempt": 1000,
+      "backfill_timestamp": 1000,
+      "message_sequence_position": 1000,
+      "detected_topics": 1000,
+      "backfill_processed": 1000,
+      "requires_manual_review": 1000,
+      "content_length": 1000,
+      "session_id": 1000,
+      "user_feedback_sentiment": 1000,
+      "semantic_analysis_details": 1000,
+      "has_success_markers": 1000,
+      "file_name": 1000,
+      "project_path": 1000,
+      "is_validated_solution": 1000,
+      "related_solution_id": 1000
+    }
+  },
+  "overall_success": false,
+  "recommendations": [
+    "Entry count mismatch: Check JSONL extraction and processing for errors",
+    "Duplicates detected: Check content hash generation and deduplication",
+    "Poor search performance: Check database optimization and indexing"
+  ],
+  "success_summary": {
+    "criteria_passed": 4,
+    "total_criteria": 7,
+    "success_percentage": 57.14285714285714
+  }
+}

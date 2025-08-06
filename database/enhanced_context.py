@@ -16,7 +16,7 @@ Enables real-time learning from user feedback to improve solution recommendation
 
 import re
 import logging
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 from datetime import datetime
 import json
 
@@ -208,12 +208,13 @@ def calculate_solution_quality_score(content: str, metadata: Dict) -> float:
     return min(quality_score, 3.0)  # Cap at 3x boost
 
 
-def analyze_feedback_sentiment(feedback_content: str) -> Dict[str, Any]:
+def analyze_feedback_sentiment(feedback_content: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Analyze user feedback to determine sentiment and strength.
     
     Args:
         feedback_content: User's feedback message content
+        context: Optional context information for enhanced analysis
         
     Returns:
         Dictionary with sentiment analysis results
@@ -269,6 +270,32 @@ def analyze_feedback_sentiment(feedback_content: str) -> Dict[str, Any]:
     else:
         certainty = 0.5 * confidence  # Partial/neutral outcomes are less certain
     
+    # Context-aware enhancements
+    context_boost = 0.0
+    is_contextual_feedback = False
+    
+    if context:
+        # Check if this is feedback responding to an assistant solution
+        if hasattr(context, 'previous_message') and context.previous_message:
+            prev_msg = context.previous_message
+            if isinstance(prev_msg, dict) and prev_msg.get('type') == 'assistant':
+                is_contextual_feedback = True
+                # Boost confidence for contextual feedback patterns
+                if sentiment != 'neutral':
+                    context_boost = 0.1  # 10% confidence boost for contextual feedback
+        
+        # Project-specific adjustments could be added here in the future
+        # if hasattr(context, 'file_path'):
+        #     # Project-specific sentiment pattern adjustments
+    
+    # Apply context boost
+    if context_boost > 0:
+        confidence = min(confidence + context_boost, 1.0)
+        if sentiment in ["positive", "negative"]:
+            certainty = strength * confidence
+        else:
+            certainty = 0.5 * confidence
+    
     return {
         'sentiment': sentiment,
         'strength': strength,
@@ -276,7 +303,9 @@ def analyze_feedback_sentiment(feedback_content: str) -> Dict[str, Any]:
         'certainty': certainty,
         'positive_score': positive_score,
         'negative_score': negative_score,
-        'partial_score': partial_score
+        'partial_score': partial_score,
+        'is_contextual_feedback': is_contextual_feedback,
+        'context_boost_applied': context_boost
     }
 
 

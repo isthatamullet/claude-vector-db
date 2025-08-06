@@ -40,6 +40,9 @@ from database.enhanced_context import (
     classify_solution_type
 )
 
+# Import central logging system
+from system.central_logging import VectorDatabaseLogger, ProcessingTimer
+
 logger = logging.getLogger(__name__)
 
 
@@ -99,6 +102,9 @@ class ConversationBackFillEngine:
         self.database = database
         self.extractor = ConversationExtractor()
         
+        # Initialize central logging
+        self.logger = VectorDatabaseLogger("conversation_backfill")
+        
         # Processing configuration
         self.batch_size = 100  # ChromaDB batch limit compliance
         self.max_session_messages = 1000  # Performance limit per session
@@ -113,7 +119,7 @@ class ConversationBackFillEngine:
             'processing_time_total_ms': 0.0
         }
         
-        logger.info("🔗 ConversationBackFillEngine initialized")
+        self.logger.log_processing_start("backfill_engine_initialization")
     
     def process_session(self, session_id: str) -> BackFillResult:
         """
@@ -128,67 +134,80 @@ class ConversationBackFillEngine:
         Returns:
             BackFillResult with comprehensive processing statistics
         """
-        start_time = time.time()
-        logger.info(f"🔗 Starting conversation chain back-fill for session: {session_id}")
-        
-        try:
-            # Step 1: Load complete session transcript
-            transcript_result = self._load_session_transcript(session_id)
-            if not transcript_result['success']:
-                return BackFillResult(
-                    session_id=session_id,
-                    success=False,
-                    error_count=1,
-                    processing_time_ms=(time.time() - start_time) * 1000
+        with ProcessingTimer(self.logger, f"session_backfill", {"session_id": session_id}):
+            start_time = time.time()
+            self.logger.log_session_processing(session_id, "started")
+            
+            try:
+                # Step 1: Load complete session transcript
+                self.logger.log_processing_start("transcript_loading", {"session_id": session_id})
+                transcript_result = self._load_session_transcript(session_id)
+                if not transcript_result['success']:
+                    self.logger.log_session_processing(session_id, "failed", 0, {"reason": "transcript_load_failed"})
+                    return BackFillResult(
+                        session_id=session_id,
+                        success=False,
+                        error_count=1,
+                        processing_time_ms=(time.time() - start_time) * 1000
+                    )
+                
+                transcript = transcript_result['transcript']
+                file_path = transcript_result['file_path']
+                
+                self.logger.log_processing_complete("transcript_loading", 0, {
+                    "messages_loaded": len(transcript),
+                    "file_path": file_path
+                })
+                
+                # Step 2: Analyze conversation structure and build relationships
+                self.logger.log_processing_start("relationship_analysis", {"message_count": len(transcript)})
+                relationships = self._analyze_conversation_structure(transcript, session_id)
+                self.logger.log_processing_complete("relationship_analysis", 0, {"relationships_built": len(relationships)})
+                
+                # Step 3: Validate and optimize relationships
+                self.logger.log_processing_start("relationship_validation", {"relationship_count": len(relationships)})
+                validated_relationships = self._validate_relationships(relationships, transcript)
+                self.logger.log_processing_complete("relationship_validation", 0, {"validated_relationships": len(validated_relationships)})
+                
+                # Step 4: Update database with relationships
+                self.logger.log_processing_start("database_updates", {"relationship_count": len(validated_relationships)})
+                update_result = self._update_database_relationships(validated_relationships)
+                self.logger.log_database_operation("relationship_updates", update_result['updated_count'])
+                
+                # Step 5: Calculate improvement metrics
+                self.logger.log_processing_start("improvement_calculation")
+                improvement_metrics = self._calculate_improvement_metrics(
+                    session_id, len(relationships), update_result['updated_count']
                 )
-            
-            transcript = transcript_result['transcript']
-            file_path = transcript_result['file_path']
-            
-            logger.info(f"📄 Loaded {len(transcript)} messages from {file_path}")
-            
-            # Step 2: Analyze conversation structure and build relationships
-            relationships = self._analyze_conversation_structure(transcript, session_id)
-            logger.info(f"🔍 Built {len(relationships)} conversation relationships")
-            
-            # Step 3: Validate and optimize relationships
-            validated_relationships = self._validate_relationships(relationships, transcript)
-            logger.info(f"✅ Validated {len(validated_relationships)} relationships")
-            
-            # Step 4: Update database with relationships
-            update_result = self._update_database_relationships(validated_relationships)
-            logger.info(f"💾 Updated {update_result['updated_count']} database entries")
-            
-            # Step 5: Calculate improvement metrics
-            improvement_metrics = self._calculate_improvement_metrics(
-                session_id, len(relationships), update_result['updated_count']
-            )
-            
-            # Create final result
-            processing_time_ms = (time.time() - start_time) * 1000
-            result = BackFillResult(
-                session_id=session_id,
-                relationships_built=len(validated_relationships),
-                database_updates=update_result['updated_count'],
-                population_improvement=improvement_metrics['population_improvement'],
-                processing_time_ms=processing_time_ms,
-                accuracy_score=improvement_metrics['accuracy_score'],
-                success=True
-            )
-            
-            # Update engine statistics
-            self._update_engine_stats(result)
-            
-            logger.info(f"✅ Back-fill complete for {session_id}: "
-                       f"{result.population_improvement:.1f}% improvement in {processing_time_ms:.1f}ms")
-            
-            return result
-            
-        except Exception as e:
-            processing_time_ms = (time.time() - start_time) * 1000
-            logger.error(f"❌ Back-fill failed for {session_id}: {e}")
-            
-            return BackFillResult(
+                self.logger.log_processing_complete("improvement_calculation", 0, improvement_metrics)
+                
+                # Create final result
+                processing_time_ms = (time.time() - start_time) * 1000
+                result = BackFillResult(
+                    session_id=session_id,
+                    relationships_built=len(validated_relationships),
+                    database_updates=update_result['updated_count'],
+                    population_improvement=improvement_metrics['population_improvement'],
+                    processing_time_ms=processing_time_ms,
+                    accuracy_score=improvement_metrics['accuracy_score'],
+                    success=True
+                )
+                
+                # Update engine statistics
+                self._update_engine_stats(result)
+                
+                self.logger.log_session_processing(session_id, "success", len(validated_relationships), {
+                    "population_improvement": result.population_improvement,
+                    "processing_time_ms": processing_time_ms
+                })
+                
+                return result
+                
+            except Exception as e:
+                processing_time_ms = (time.time() - start_time) * 1000
+                self.logger.log_error("session_backfill", e, {"session_id": session_id})
+                
+                return BackFillResult(
                 session_id=session_id,
                 success=False,
                 error_count=1,

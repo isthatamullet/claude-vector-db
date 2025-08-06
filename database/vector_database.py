@@ -37,6 +37,9 @@ try:
 except ImportError:
     enhanced_context_imports_success = False
 
+# Import central logging system
+from system.central_logging import VectorDatabaseLogger, ProcessingTimer
+
 # Set up logging first
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,11 +62,14 @@ class ClaudeVectorDatabase:
         self.db_path = Path(db_path)
         self.collection_name = collection_name
         
+        # Initialize central logging
+        self.logger = VectorDatabaseLogger("vector_database")
+        
         # Ensure directory exists
         self.db_path.mkdir(parents=True, exist_ok=True)
         
         # Initialize ChromaDB client with CPU-only embeddings
-        logger.info("🔄 Initializing ChromaDB with CPU-only embeddings...")
+        self.logger.log_processing_start("ChromaDB initialization", {"db_path": str(self.db_path)})
         
         self.client = chromadb.PersistentClient(
             path=str(self.db_path),
@@ -94,6 +100,71 @@ class ClaudeVectorDatabase:
     def generate_content_hash(self, content: str) -> str:
         """Generate consistent hash for content deduplication"""
         return hashlib.md5(content.encode('utf-8')).hexdigest()
+    
+    def prepare_enhanced_metadata(self, entry: ConversationEntry) -> Dict[str, Any]:
+        """Prepare complete metadata including all enhanced fields for ChromaDB storage"""
+        
+        # Start with existing basic fields (preserve current working logic)
+        metadata = {
+            "type": entry.type,
+            "project_path": entry.project_path,
+            "project_name": entry.project_name,
+            "timestamp": entry.timestamp,
+            "session_id": entry.session_id or "unknown",
+            "file_name": entry.file_name,
+            "has_code": entry.has_code,
+            "tools_used": json.dumps(entry.tools_used),
+            "content_length": entry.content_length,
+            "content_hash": self.generate_content_hash(entry.content),
+        }
+        
+        # Add Unix timestamp if available
+        if hasattr(entry, 'timestamp_unix') and entry.timestamp_unix:
+            metadata["timestamp_unix"] = entry.timestamp_unix
+        
+        # ADD: Enhanced metadata fields (THE MISSING PIECE!)
+        if isinstance(entry, EnhancedConversationEntry):
+            
+            # Topic Detection Fields
+            metadata["detected_topics"] = json.dumps(entry.detected_topics) if entry.detected_topics else "{}"
+            metadata["primary_topic"] = entry.primary_topic or ""
+            metadata["topic_confidence"] = entry.topic_confidence
+            
+            # Solution Quality Fields  
+            metadata["solution_quality_score"] = entry.solution_quality_score
+            metadata["has_success_markers"] = entry.has_success_markers
+            metadata["has_quality_indicators"] = entry.has_quality_indicators
+            
+            # Conversation Chain Fields (CRITICAL FOR CONVERSATION CHAINS!)
+            metadata["previous_message_id"] = entry.previous_message_id or ""
+            metadata["next_message_id"] = entry.next_message_id or ""
+            metadata["message_sequence_position"] = entry.message_sequence_position
+            
+            # Feedback & Validation Fields
+            metadata["user_feedback_sentiment"] = entry.user_feedback_sentiment or ""
+            metadata["is_validated_solution"] = entry.is_validated_solution
+            metadata["is_refuted_attempt"] = entry.is_refuted_attempt
+            metadata["validation_strength"] = entry.validation_strength
+            metadata["outcome_certainty"] = entry.outcome_certainty
+            
+            # Solution Analysis Fields
+            metadata["is_solution_attempt"] = entry.is_solution_attempt
+            metadata["is_feedback_to_solution"] = entry.is_feedback_to_solution
+            metadata["related_solution_id"] = entry.related_solution_id or ""
+            metadata["feedback_message_id"] = entry.feedback_message_id or ""
+            metadata["solution_category"] = entry.solution_category or ""
+            
+            # Context Scoring Fields
+            metadata["troubleshooting_context_score"] = getattr(entry, 'troubleshooting_context_score', 0.0)
+            metadata["realtime_learning_boost"] = getattr(entry, 'realtime_learning_boost', 1.0)
+            
+            # Back-fill System Fields (proven working)
+            metadata["backfill_timestamp"] = getattr(entry, 'backfill_timestamp', '') or ""
+            metadata["backfill_processed"] = getattr(entry, 'backfill_processed', False)
+            metadata["relationship_confidence"] = getattr(entry, 'relationship_confidence', 0.0)
+            metadata["content_hash"] = getattr(entry, 'content_hash', '') or metadata["content_hash"]  # Use existing if not set
+        
+        return metadata
     
     def add_conversation_entry(self, entry: ConversationEntry) -> bool:
         """Add a single conversation entry to the vector database"""
@@ -129,78 +200,74 @@ class ClaudeVectorDatabase:
     def add_conversation_entries(self, entries: List[ConversationEntry], batch_size: int = 100) -> Dict[str, int]:
         """Add multiple conversation entries in batches"""
         
-        logger.info(f"🔄 Adding {len(entries)} conversation entries to vector database...")
-        
-        results = {"added": 0, "skipped": 0, "errors": 0}
-        
-        # Check for existing entries to avoid duplicates
-        existing_ids = set()
-        try:
-            existing_data = self.collection.get(include=[])
-            existing_ids = set(existing_data['ids'])
-            logger.info(f"Found {len(existing_ids)} existing entries in database")
-        except Exception as e:
-            logger.warning(f"Could not check existing entries: {e}")
-        
-        # Process in batches
-        for i in range(0, len(entries), batch_size):
-            batch = entries[i:i + batch_size]
+        with ProcessingTimer(self.logger, "batch_add_conversation_entries", {"count": len(entries), "batch_size": batch_size}):
+            results = {"added": 0, "skipped": 0, "errors": 0}
             
-            # Prepare batch data
-            documents = []
-            metadatas = []
-            ids = []
+            # Check for existing entries to avoid duplicates
+            existing_ids = set()
+            try:
+                existing_data = self.collection.get(include=[])
+                existing_ids = set(existing_data['ids'])
+                self.logger.log_database_operation("duplicate_check", len(existing_ids))
+            except Exception as e:
+                self.logger.log_error("duplicate_check", e)
             
-            for entry in batch:
-                # Skip if already exists
-                if entry.id in existing_ids:
-                    results["skipped"] += 1
-                    continue
+            # Process in batches
+            for i in range(0, len(entries), batch_size):
+                batch = entries[i:i + batch_size]
                 
-                try:
-                    metadata = {
-                        "type": entry.type,
-                        "project_path": entry.project_path,
-                        "project_name": entry.project_name,
-                        "timestamp": entry.timestamp,
-                        "session_id": entry.session_id or "unknown",
-                        "file_name": entry.file_name,
-                        "has_code": entry.has_code,
-                        "tools_used": json.dumps(entry.tools_used),
-                        "content_length": entry.content_length,
-                    }
+                # Prepare batch data
+                documents = []
+                metadatas = []
+                ids = []
+                
+                for entry in batch:
+                    # Skip if already exists
+                    if entry.id in existing_ids:
+                        results["skipped"] += 1
+                        self.logger.log_duplicate_handling(entry.id, "skipped")
+                        continue
                     
-                    # Add Unix timestamp if available (for new entries with timezone-aware filtering)
-                    if hasattr(entry, 'timestamp_unix') and entry.timestamp_unix:
-                        metadata["timestamp_unix"] = entry.timestamp_unix
-                    
-                    metadata["content_hash"] = self.generate_content_hash(entry.content)
-                    
-                    documents.append(entry.content)
-                    metadatas.append(metadata)
-                    ids.append(entry.id)
-                    
-                except Exception as e:
-                    logger.error(f"Error preparing entry {entry.id}: {e}")
-                    results["errors"] += 1
+                    try:
+                        # Use the new enhanced metadata preparation method
+                        metadata = self.prepare_enhanced_metadata(entry)
+                        
+                        documents.append(entry.content)
+                        metadatas.append(metadata)
+                        ids.append(entry.id)
+                        
+                        # Count populated enhanced fields
+                        enhanced_field_count = sum(1 for k, v in metadata.items() if k not in ['type', 'project_path', 'project_name', 'timestamp', 'session_id', 'file_name', 'has_code', 'tools_used', 'content_length', 'content_hash', 'timestamp_unix'] and v)
+                        
+                        self.logger.log_entry_processing(entry.id, "success", {
+                            "content_length": entry.content_length,
+                            "has_code": entry.has_code,
+                            "enhanced_fields": enhanced_field_count,
+                            "total_fields": len(metadata)
+                        })
+                        
+                    except Exception as e:
+                        self.logger.log_error("entry_preparation", e, {"entry_id": entry.id})
+                        results["errors"] += 1
+                
+                # Add batch to collection
+                if documents:
+                    try:
+                        self.collection.add(
+                            documents=documents,
+                            metadatas=metadatas,
+                            ids=ids
+                        )
+                        results["added"] += len(documents)
+                        self.logger.log_batch_processing(len(batch), len(documents), results["errors"], 0)
+                        
+                    except Exception as e:
+                        self.logger.log_error("batch_add", e, {"batch_number": i//batch_size + 1})
+                        results["errors"] += len(documents)
             
-            # Add batch to collection
-            if documents:
-                try:
-                    self.collection.add(
-                        documents=documents,
-                        metadatas=metadatas,
-                        ids=ids
-                    )
-                    results["added"] += len(documents)
-                    logger.info(f"✅ Added batch {i//batch_size + 1}: {len(documents)} entries")
-                    
-                except Exception as e:
-                    logger.error(f"Error adding batch {i//batch_size + 1}: {e}")
-                    results["errors"] += len(documents)
-        
-        logger.info(f"✅ Batch addition complete: {results['added']} added, {results['skipped']} skipped, {results['errors']} errors")
-        return results
+            # Log final results
+            self.logger.log_processing_complete("batch_add_conversation_entries", 0, results)
+            return results
     
     async def batch_add_entries(self, entries: List[ConversationEntry]) -> bool:
         """Add conversation entries for real-time incremental updates.
@@ -274,23 +341,8 @@ class ClaudeVectorDatabase:
             
             for entry in new_entries:
                 try:
-                    metadata = {
-                        "type": entry.type,
-                        "project_path": entry.project_path,
-                        "project_name": entry.project_name,
-                        "timestamp": entry.timestamp,
-                        "session_id": entry.session_id or "unknown",
-                        "file_name": entry.file_name,
-                        "has_code": entry.has_code,
-                        "tools_used": json.dumps(entry.tools_used),
-                        "content_length": entry.content_length,
-                    }
-                    
-                    # Add Unix timestamp if available (for new entries with timezone-aware filtering)
-                    if hasattr(entry, 'timestamp_unix') and entry.timestamp_unix:
-                        metadata["timestamp_unix"] = entry.timestamp_unix
-                    
-                    metadata["content_hash"] = self.generate_content_hash(entry.content)
+                    # Use the new enhanced metadata preparation method
+                    metadata = self.prepare_enhanced_metadata(entry)
                     
                     documents.append(entry.content)
                     metadatas.append(metadata)

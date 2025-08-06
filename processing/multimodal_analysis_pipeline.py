@@ -255,16 +255,16 @@ class MultiModalAnalysisPipeline:
             }
             
             # 3. Technical context analysis
-            technical_analysis = self.technical_analyzer.analyze_technical_context(
+            technical_analysis = self.technical_analyzer.analyze_technical_feedback(
                 feedback_content, context
             )
             technical_result = {
-                'sentiment': technical_analysis.get('technical_sentiment', 'neutral'),
-                'confidence': technical_analysis.get('technical_confidence', 0.0),
-                'strength': technical_analysis.get('technical_confidence', 0.0),
+                'sentiment': 'neutral',  # Technical analyzer doesn't provide sentiment directly
+                'confidence': technical_analysis.technical_confidence,
+                'strength': technical_analysis.technical_confidence,
                 'method': 'technical_context',
-                'processing_time_ms': technical_analysis.get('processing_time_ms', 0.0),
-                'domain': technical_analysis.get('technical_domain', 'general')
+                'processing_time_ms': technical_analysis.processing_time_ms,
+                'domain': technical_analysis.technical_domain or 'general'
             }
             
             # Calculate method agreement and consistency

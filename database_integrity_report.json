@@ -1,0 +1,138 @@
+{
+  "collection_health": {
+    "collection_name": "claude_conversations",
+    "entry_count": 43611,
+    "test_query_success": true,
+    "test_search_success": true,
+    "health_score": 100.0
+  },
+  "metadata_consistency": {
+    "entries_analyzed": 1000,
+    "total_fields_found": 47,
+    "required_field_coverage": {
+      "id": 0.0,
+      "project_path": 100.0,
+      "type": 100.0,
+      "has_code": 100.0,
+      "project_name": 100.0,
+      "session_id": 100.0,
+      "content_length": 100.0,
+      "file_name": 100.0,
+      "timestamp": 100.0
+    },
+    "missing_required_fields": {
+      "id": 1000
+    },
+    "malformed_entries": 0,
+    "malformed_percentage": 0.0,
+    "consistency_score": 88.88888888888889,
+    "field_counts": {
+      "partial_similarity": 1000,
+      "backfill_timestamp": 1000,
+      "content_length": 1000,
+      "project_path": 1000,
+      "complex_outcome_detected": 1000,
+      "topic_confidence": 1000,
+      "semantic_method": 1000,
+      "primary_topic": 1000,
+      "semantic_confidence": 1000,
+      "pattern_vs_semantic_agreement": 1000,
+      "technical_confidence": 1000,
+      "relationship_confidence": 1000,
+      "content_hash": 1000,
+      "has_success_markers": 1000,
+      "positive_similarity": 1000,
+      "session_id": 1000,
+      "has_code": 1000,
+      "validation_strength": 1000,
+      "file_name": 1000,
+      "semantic_sentiment": 1000,
+      "best_matching_patterns": 1000,
+      "tools_used": 1000,
+      "is_validated_solution": 1000,
+      "type": 1000,
+      "primary_analysis_method": 1000,
+      "timestamp": 1000,
+      "detected_topics": 1000,
+      "timestamp_unix": 1000,
+      "negative_similarity": 1000,
+      "is_solution_attempt": 1000,
+      "is_feedback_to_solution": 1000,
+      "outcome_certainty": 1000,
+      "solution_category": 1000,
+      "technical_domain": 1000,
+      "user_feedback_sentiment": 1000,
+      "previous_message_id": 1000,
+      "is_refuted_attempt": 1000,
+      "semantic_analysis_details": 1000,
+      "related_solution_id": 1000,
+      "has_quality_indicators": 1000,
+      "feedback_message_id": 1000,
+      "requires_manual_review": 1000,
+      "message_sequence_position": 1000,
+      "backfill_processed": 1000,
+      "next_message_id": 1000,
+      "project_name": 1000,
+      "solution_quality_score": 1000
+    }
+  },
+  "data_integrity": {
+    "entries_checked": 500,
+    "empty_documents": 0,
+    "empty_metadatas": 0,
+    "empty_ids": 0,
+    "timestamp_format_errors": 0,
+    "numeric_field_errors": 0,
+    "boolean_field_errors": 0,
+    "duplicate_ids": 0,
+    "unique_ids": 500,
+    "total_issues": 0,
+    "integrity_score": 100.0
+  },
+  "content_hash_integrity": {
+    "total_entries": 43611,
+    "entries_with_hash": 43611,
+    "entries_without_hash": 0,
+    "unique_hashes": 12034,
+    "duplicate_hashes": 31577,
+    "invalid_hashes": 0,
+    "hash_coverage_percent": 100.0,
+    "hash_validity_percent": 100.0,
+    "hash_integrity_score": 100.0
+  },
+  "chain_integrity": {
+    "entries_analyzed": 1000,
+    "chain_field_statistics": {
+      "previous_message_id": {
+        "populated_count": 997,
+        "valid_references": 0,
+        "coverage_percent": 99.7,
+        "validity_percent": 0.0
+      },
+      "next_message_id": {
+        "populated_count": 999,
+        "valid_references": 0,
+        "coverage_percent": 99.9,
+        "validity_percent": 0.0
+      },
+      "related_solution_id": {
+        "populated_count": 0,
+        "valid_references": 0,
+        "coverage_percent": 0.0,
+        "validity_percent": 100
+      },
+      "feedback_message_id": {
+        "populated_count": 0,
+        "valid_references": 0,
+        "coverage_percent": 0.0,
+        "validity_percent": 100
+      }
+    },
+    "orphaned_references": 1996,
+    "average_coverage_percent": 49.900000000000006,
+    "average_validity_percent": 50.0,
+    "chain_integrity_score": 49.94
+  },
+  "overall_score": 87.76577777777777,
+  "check_timestamp": "2025-08-06T01:10:59.676506"
+}
