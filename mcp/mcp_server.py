@@ -7,6 +7,16 @@ PRP-4 FINAL OPTIMIZATION IMPLEMENTATION (August 2025)
 Enhanced with caching, validation, monitoring, and 100x performance improvements
 """
 
+import sys
+from pathlib import Path
+
+# Critical: Import MCP framework BEFORE adding local paths to avoid namespace collision
+# Ensure venv packages are accessible first
+venv_path = str(Path(__file__).parent.parent / 'venv' / 'lib' / 'python3.12' / 'site-packages')
+if venv_path not in sys.path:
+    sys.path.insert(0, venv_path)
+
+# Import MCP framework from virtual environment BEFORE local paths interfere
 from mcp.server.fastmcp import FastMCP
 import asyncio
 import logging
@@ -16,6 +26,7 @@ import sys
 import os
 import time
 import hashlib
+import importlib.util
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Union
 
@@ -54,6 +65,14 @@ from processing.technical_context_analyzer import TechnicalContextAnalyzer
 from processing.multimodal_analysis_pipeline import MultiModalAnalysisPipeline
 from processing.semantic_pattern_manager import SemanticPatternManager
 from processing.validation_enhancement_metrics import ValidationEnhancementMetrics
+
+# Import hybrid enhancements (Phase 3) - Use importlib to avoid namespace collision
+hybrid_spec = importlib.util.spec_from_file_location("mcp_hybrid_enhancements", 
+                                                   Path(__file__).parent / "mcp_hybrid_enhancements.py")
+hybrid_module = importlib.util.module_from_spec(hybrid_spec)
+hybrid_spec.loader.exec_module(hybrid_module)
+enhance_search_with_hybrid_filtering = hybrid_module.enhance_search_with_hybrid_filtering
+get_hybrid_search_stats = hybrid_module.get_hybrid_search_stats
 
 # ===== PRP-4 ENHANCEMENT ARCHITECTURE =====
 
@@ -703,14 +722,52 @@ async def _failed_attempts_search_implementation(query: str, project_context: Op
         limit=limit
     )
 
-async def _recent_search_implementation(query: str, project_context: Optional[str], 
-                                      limit: int, recency: str, db) -> List[Dict[str, Any]]:
-    """Recent conversations search implementation (replaces get_most_recent_conversation)"""
-    return await get_most_recent_conversation(
-        conversation_type=None,  # Search both user and assistant
-        project_context=project_context,
-        limit=limit
-    )
+async def _pure_timestamp_search(query: str, project_context: Optional[str], 
+                                 limit: int, db) -> List[Dict[str, Any]]:
+    """Pure timestamp-based search - returns most recent entries by timestamp"""
+    try:
+        # Get all entries sorted by timestamp (most recent first)
+        results = db.collection.get(
+            include=["metadatas", "documents"],
+            limit=None  # Get all to sort properly
+        )
+        
+        if not results["metadatas"]:
+            return []
+        
+        # Convert to list of dicts and sort by timestamp_unix (descending)
+        entries = []
+        for i, metadata in enumerate(results["metadatas"]):
+            entry = {
+                "id": results["ids"][i],
+                "content": results["documents"][i],
+                "metadata": metadata,
+                "timestamp_unix": float(metadata.get("timestamp_unix", 0))
+            }
+            
+            # Apply project context filter if specified
+            if project_context:
+                project_name = metadata.get("project_name", "").lower()
+                if project_context.lower() not in project_name:
+                    continue
+            
+            # Apply message type filter based on query
+            if "prompt" in query.lower():
+                if metadata.get("type") != "user":
+                    continue
+            elif "response" in query.lower():
+                if metadata.get("type") != "assistant":
+                    continue
+            
+            entries.append(entry)
+        
+        # Sort by timestamp (most recent first) and limit
+        entries.sort(key=lambda x: x["timestamp_unix"], reverse=True)
+        return entries[:limit]
+        
+    except Exception as e:
+        logger.error(f"❌ Pure timestamp search failed: {e}")
+        return []
 
 async def _topic_search_implementation(query: str, topic: str, project_context: Optional[str], 
                                      limit: int, db) -> List[Dict[str, Any]]:
@@ -755,7 +812,7 @@ async def search_conversations_unified(
     limit: int = 5,
     
     # CORE SEARCH CONTROLS (PRP-3 Consolidation)
-    search_mode: str = "semantic",  # "semantic", "validated_only", "failed_only", "recent_only", "by_topic"
+    search_mode: str = "semantic",  # "semantic", "validated_only", "failed_only", "time", "by_topic"
     topic_focus: Optional[str] = None,  # Required when search_mode="by_topic"
     
     # ENHANCEMENT CONTROLS  
@@ -789,7 +846,14 @@ async def search_conversations_unified(
     include_analytics: bool = False,           # Analytics integration
     
     # MIGRATION COMPATIBILITY
-    legacy_mode: Optional[str] = None  # For testing compatibility with old tools
+    legacy_mode: Optional[str] = None,  # For testing compatibility with old tools
+    
+    # PHASE 3: HYBRID SPACY + SENTENCE TRANSFORMERS CONTROLS
+    enable_hybrid_intelligence: bool = False,  # Enable hybrid spaCy + ST filtering
+    hybrid_tool_filter: Optional[str] = None,  # Filter by specific tool (e.g., "Edit", "Bash")
+    hybrid_framework_filter: Optional[str] = None,  # Filter by framework (e.g., "React", "TypeScript")
+    hybrid_min_confidence: Optional[float] = None,  # Minimum hybrid confidence threshold
+    hybrid_pattern_type: Optional[str] = None  # Filter by pattern type ("solution", "feedback", "error")
 ) -> List[Dict[str, Any]]:
     """
     UNIFIED SEARCH TOOL - PRP-3 Consolidation (8 Search Tools → 1)
@@ -801,7 +865,7 @@ async def search_conversations_unified(
     - search_by_topic (search_mode="by_topic", topic_focus required)
     - search_with_validation_boost (use_validation_boost=True)
     - search_with_context_chains (include_context_chains=True)
-    - get_most_recent_conversation (search_mode="recent_only")
+    - get_most_recent_conversation (search_mode="time")
     
     This is the main entry point for the July 2025 MCP Integration Enhancement System,
     providing unified access to all search capabilities with progressive enhancement.
@@ -812,7 +876,7 @@ async def search_conversations_unified(
         limit: Maximum number of results to return
         
         # CORE SEARCH CONTROLS
-        search_mode: Search behavior mode ("semantic", "validated_only", "failed_only", "recent_only", "by_topic")
+        search_mode: Search behavior mode ("semantic", "validated_only", "failed_only", "time", "by_topic")
         topic_focus: Required when search_mode="by_topic" (e.g., "debugging", "performance", "authentication")
         
         # ENHANCEMENT CONTROLS
@@ -846,8 +910,15 @@ async def search_conversations_unified(
         
         legacy_mode: Internal compatibility testing parameter
         
+        # PHASE 3: HYBRID INTELLIGENCE CONTROLS (NEW)
+        enable_hybrid_intelligence: Enable hybrid spaCy + Sentence Transformers filtering
+        hybrid_tool_filter: Filter by specific tool (e.g., "Edit", "Bash", "Read")
+        hybrid_framework_filter: Filter by framework (e.g., "React", "TypeScript", "Python")
+        hybrid_min_confidence: Minimum hybrid confidence threshold (0.0-1.0)
+        hybrid_pattern_type: Filter by pattern type ("solution", "feedback", "error")
+        
     Returns:
-        Enhanced search results with unified enhancement metadata
+        Enhanced search results with unified enhancement metadata including hybrid intelligence
     """
     global db, enhanced_cache, performance_monitor, connection_pool
     
@@ -873,7 +944,13 @@ async def search_conversations_unified(
         'show_context_chain': show_context_chain,
         'use_enhanced_search': use_enhanced_search,
         'min_validation_strength': min_validation_strength,
-        'chain_length': chain_length
+        'chain_length': chain_length,
+        # Phase 3: Hybrid intelligence parameters
+        'enable_hybrid_intelligence': enable_hybrid_intelligence,
+        'hybrid_tool_filter': hybrid_tool_filter,
+        'hybrid_framework_filter': hybrid_framework_filter,
+        'hybrid_min_confidence': hybrid_min_confidence,
+        'hybrid_pattern_type': hybrid_pattern_type
     }
     
     # Attempt cache retrieval
@@ -970,13 +1047,12 @@ async def search_conversations_unified(
                 db=db
             )
             
-        elif search_mode == "recent_only":
-            # Recent conversations (replaces get_most_recent_conversation)
-            results = await _recent_search_implementation(
+        elif search_mode == "time":
+            # Pure timestamp-based search (fixes broken recent_only)
+            results = await _pure_timestamp_search(
                 query=query,
                 project_context=project_context,
                 limit=limit,
-                recency=recency or "today",
                 db=db
             )
             
@@ -1045,6 +1121,55 @@ async def search_conversations_unified(
                     }
                 except Exception as analytics_error:
                     result['analytics'] = {"error": f"Analytics unavailable: {analytics_error}"}
+        
+        # ===== PHASE 3: HYBRID INTELLIGENCE FILTERING =====
+        if enable_hybrid_intelligence and results:
+            try:
+                logger.info(f"🧠 Applying hybrid intelligence filtering to {len(results)} results")
+                
+                # Apply hybrid filtering to results
+                filtered_results = enhance_search_with_hybrid_filtering(
+                    results,
+                    tool_filter=hybrid_tool_filter,
+                    framework_filter=hybrid_framework_filter,
+                    min_confidence=hybrid_min_confidence,
+                    pattern_type=hybrid_pattern_type
+                )
+                
+                # Get hybrid search statistics
+                hybrid_stats = get_hybrid_search_stats(filtered_results)
+                
+                # Update results with filtered ones
+                original_count = len(results)
+                results = filtered_results
+                
+                # Add hybrid intelligence metadata to first result
+                if results and len(results) > 0:
+                    results[0]['hybrid_intelligence'] = {
+                        'filtering_applied': True,
+                        'original_results_count': original_count,
+                        'filtered_results_count': len(results),
+                        'filtering_reduction': original_count - len(results),
+                        'filters_applied': {
+                            'tool_filter': hybrid_tool_filter,
+                            'framework_filter': hybrid_framework_filter,
+                            'min_confidence': hybrid_min_confidence,
+                            'pattern_type': hybrid_pattern_type
+                        },
+                        'hybrid_statistics': hybrid_stats
+                    }
+                
+                logger.info(f"🔍 Hybrid filtering complete: {original_count} → {len(results)} results")
+                
+            except Exception as hybrid_error:
+                logger.warning(f"Hybrid intelligence filtering failed: {hybrid_error}")
+                # Continue with original results if hybrid filtering fails
+                if results and len(results) > 0:
+                    results[0]['hybrid_intelligence'] = {
+                        'filtering_applied': False,
+                        'error': str(hybrid_error),
+                        'fallback_to_standard_results': True
+                    }
         
         # ===== PRP-4 PERFORMANCE ENHANCEMENT - RESULT CACHING =====
         # Cache the successful result for future queries
@@ -5675,6 +5800,323 @@ async def get_semantic_validation_health() -> Dict[str, Any]:
                 "tool_name": "get_semantic_validation_health",
                 "error_occurred": True,
                 "check_timestamp": datetime.now().isoformat()
+            }
+        }
+
+# ===== PHASE 3: HYBRID SPACY + SENTENCE TRANSFORMERS MCP TOOLS =====
+
+@mcp.tool()
+async def search_with_hybrid_intelligence(
+    query: str,
+    project_context: Optional[str] = None,
+    tool_filter: Optional[str] = None,
+    framework_filter: Optional[str] = None,
+    min_confidence: Optional[float] = None,
+    pattern_type: Optional[str] = None,
+    limit: int = 5
+) -> Dict[str, Any]:
+    """
+    Enhanced semantic search with hybrid spaCy + Sentence Transformers intelligence filtering.
+    
+    Combines traditional semantic search with advanced filtering capabilities based on:
+    - Technical tools detected (Edit, Bash, Read, etc.)
+    - Framework/technology mentions (React, TypeScript, etc.)
+    - Solution/feedback/error pattern classification
+    - ML confidence scoring
+    
+    Args:
+        query: Search query
+        project_context: Optional project name for relevance boosting
+        tool_filter: Filter by specific tool (e.g., "Edit", "Bash")
+        framework_filter: Filter by framework (e.g., "React", "TypeScript")
+        min_confidence: Minimum hybrid confidence threshold (0.0-1.0)
+        pattern_type: Filter by pattern type ("solution", "feedback", "error")
+        limit: Maximum number of results
+        
+    Returns:
+        Enhanced search results with hybrid intelligence metadata
+    """
+    global db
+    
+    try:
+        # Initialize database if needed
+        if not db:
+            db = ClaudeVectorDatabase()
+        
+        logger.info(f"🔍 Hybrid intelligence search: '{query}' with filters - tool: {tool_filter}, framework: {framework_filter}")
+        
+        # Perform base semantic search with higher limit for filtering
+        search_limit = max(limit * 3, 50)  # Get more results for better filtering
+        
+        # Get project boost if specified
+        project_boost = 0.5 if project_context else 0.0
+        
+        # Perform semantic search
+        search_results = db.collection.query(
+            query_texts=[query],
+            n_results=search_limit,
+            include=['documents', 'metadatas', 'distances'],
+            where={'project_name': {'$eq': project_context}} if project_context else None
+        )
+        
+        if not search_results['documents'][0]:
+            return {
+                "results": [],
+                "query": query,
+                "total_found": 0,
+                "hybrid_intelligence_active": True,
+                "filters_applied": {
+                    "tool_filter": tool_filter,
+                    "framework_filter": framework_filter,
+                    "min_confidence": min_confidence,
+                    "pattern_type": pattern_type
+                }
+            }
+        
+        # Convert search results to enhanced format
+        enhanced_results = []
+        for i, (doc, metadata, distance) in enumerate(zip(
+            search_results['documents'][0],
+            search_results['metadatas'][0], 
+            search_results['distances'][0]
+        )):
+            result = {
+                'content': doc,
+                'metadata': metadata,
+                'similarity_score': 1.0 - distance,
+                'hybrid_data': metadata  # Include all metadata for hybrid filtering
+            }
+            enhanced_results.append(result)
+        
+        # Apply hybrid filtering
+        filtered_results = enhance_search_with_hybrid_filtering(
+            enhanced_results,
+            tool_filter=tool_filter,
+            framework_filter=framework_filter,
+            min_confidence=min_confidence,
+            pattern_type=pattern_type
+        )
+        
+        # Limit final results
+        final_results = filtered_results[:limit]
+        
+        # Get hybrid search statistics
+        hybrid_stats = get_hybrid_search_stats(final_results)
+        
+        response = {
+            "results": final_results,
+            "query": query,
+            "total_found": len(final_results),
+            "pre_filter_count": len(enhanced_results),
+            "hybrid_intelligence_active": True,
+            "filters_applied": {
+                "tool_filter": tool_filter,
+                "framework_filter": framework_filter,
+                "min_confidence": min_confidence,
+                "pattern_type": pattern_type
+            },
+            "hybrid_statistics": hybrid_stats,
+            "search_metadata": {
+                "project_context": project_context,
+                "cache_used": False,
+                "processing_timestamp": datetime.now().isoformat()
+            }
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Hybrid intelligence search error: {e}")
+        return {
+            "error": str(e),
+            "query": query,
+            "hybrid_intelligence_active": False,
+            "fallback_message": "Hybrid search failed, consider using search_conversations_unified"
+        }
+
+@mcp.tool()
+async def analyze_conversation_intelligence(
+    conversation_content: str,
+    include_entities: bool = True,
+    include_tools: bool = True,
+    include_frameworks: bool = True,
+    include_patterns: bool = True
+) -> Dict[str, Any]:
+    """
+    Analyze conversation content using hybrid spaCy + Sentence Transformers intelligence.
+    
+    Provides detailed analysis of conversation content including:
+    - Named entities (spaCy NER)
+    - Technical tools and Claude Code tools
+    - Framework and technology mentions
+    - Solution/feedback/error pattern classification
+    - ML confidence scoring
+    
+    Args:
+        conversation_content: Content to analyze
+        include_entities: Include spaCy named entity recognition
+        include_tools: Include technical tool detection
+        include_frameworks: Include framework/technology detection
+        include_patterns: Include pattern similarity analysis
+        
+    Returns:
+        Comprehensive intelligence analysis of the conversation
+    """
+    try:
+        # Import hybrid processor (lazy loading)
+        from processing.hybrid_spacy_st_processor import HybridSpacySTProcessor
+        
+        # Initialize processor with shared embedding model optimization
+        processor = HybridSpacySTProcessor()
+        
+        logger.info(f"🧠 Analyzing conversation intelligence for {len(conversation_content)} characters")
+        
+        # Extract intelligence
+        intelligence_results = processor.extract_intelligence(conversation_content)
+        
+        # Build comprehensive response
+        response = {
+            "analysis_timestamp": datetime.now().isoformat(),
+            "content_length": len(conversation_content),
+            "intelligence_extracted": True,
+            "processor_stats": processor.get_processor_stats()
+        }
+        
+        # Add requested analysis components
+        if include_entities:
+            response["entities"] = {
+                "spacy_entities": intelligence_results.get('spacy_entities', []),
+                "entity_count": len(intelligence_results.get('spacy_entities', []))
+            }
+            
+        if include_tools:
+            response["technical_tools"] = {
+                "tools_detected": intelligence_results.get('technical_tools', []),
+                "tool_count": len(intelligence_results.get('technical_tools', []))
+            }
+            
+        if include_frameworks:
+            response["frameworks"] = {
+                "frameworks_detected": intelligence_results.get('framework_mentions', []),
+                "framework_count": len(intelligence_results.get('framework_mentions', []))
+            }
+            
+        if include_patterns:
+            response["pattern_analysis"] = {
+                "solution_similarity": intelligence_results.get('solution_similarity_score', 0.0),
+                "feedback_similarity": intelligence_results.get('feedback_similarity_score', 0.0),
+                "error_similarity": intelligence_results.get('error_similarity_score', 0.0),
+                "best_pattern_match": intelligence_results.get('best_pattern_match', ''),
+                "hybrid_confidence": intelligence_results.get('hybrid_confidence', 0.0)
+            }
+        
+        # Add summary intelligence
+        response["intelligence_summary"] = {
+            "has_technical_content": len(intelligence_results.get('technical_tools', [])) > 0,
+            "has_framework_mentions": len(intelligence_results.get('framework_mentions', [])) > 0,
+            "likely_solution": intelligence_results.get('solution_similarity_score', 0.0) > 0.3,
+            "likely_feedback": intelligence_results.get('feedback_similarity_score', 0.0) > 0.3,
+            "likely_error": intelligence_results.get('error_similarity_score', 0.0) > 0.3,
+            "confidence_level": "high" if intelligence_results.get('hybrid_confidence', 0.0) > 0.7 else
+                              "medium" if intelligence_results.get('hybrid_confidence', 0.0) > 0.4 else "low"
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Conversation intelligence analysis error: {e}")
+        return {
+            "error": str(e),
+            "analysis_timestamp": datetime.now().isoformat(),
+            "intelligence_extracted": False,
+            "fallback_message": "Hybrid analysis failed - check hybrid processor availability"
+        }
+
+@mcp.tool()
+async def get_hybrid_system_health() -> Dict[str, Any]:
+    """
+    Get comprehensive health status of hybrid spaCy + Sentence Transformers system.
+    
+    Returns:
+        Health status including processor availability, model status, and performance metrics
+    """
+    try:
+        # Test hybrid processor import and initialization
+        from processing.hybrid_spacy_st_processor import HybridSpacySTProcessor
+        
+        logger.info("🏥 Checking hybrid system health...")
+        
+        # Initialize processor for health check
+        processor = HybridSpacySTProcessor()
+        
+        # Get processor statistics
+        processor_stats = processor.get_processor_stats()
+        
+        # Test basic functionality
+        test_content = "I used the Edit tool to fix a React TypeScript issue and it worked perfectly!"
+        test_start = time.time()
+        test_result = processor.extract_intelligence(test_content)
+        test_duration = (time.time() - test_start) * 1000  # Convert to milliseconds
+        
+        # Build health report
+        health_status = {
+            "overall_health": "healthy",
+            "hybrid_system_available": True,
+            "processor_info": processor_stats,
+            "functionality_test": {
+                "test_passed": test_result.get('hybrid_confidence', 0.0) > 0.0,
+                "test_duration_ms": round(test_duration, 2),
+                "tools_detected": test_result.get('technical_tools', []),
+                "frameworks_detected": test_result.get('framework_mentions', []),
+                "confidence_achieved": test_result.get('hybrid_confidence', 0.0)
+            },
+            "performance_characteristics": {
+                "processing_time_acceptable": test_duration < 200,  # Under 200ms target
+                "spacy_model_loaded": processor_stats.get('spacy_model') == 'en_core_web_sm',
+                "shared_embedding_model": processor_stats.get('shared_model_used', False)
+            },
+            "system_capabilities": {
+                "named_entity_recognition": True,
+                "tool_detection": True,
+                "framework_detection": True,
+                "pattern_classification": True,
+                "confidence_scoring": True
+            },
+            "health_metadata": {
+                "check_timestamp": datetime.now().isoformat(),
+                "tool_name": "get_hybrid_system_health",
+                "version": "1.0"
+            }
+        }
+        
+        # Determine overall health
+        if (not health_status["functionality_test"]["test_passed"] or 
+            not health_status["performance_characteristics"]["processing_time_acceptable"]):
+            health_status["overall_health"] = "degraded"
+        
+        return health_status
+        
+    except ImportError as e:
+        return {
+            "overall_health": "unhealthy",
+            "hybrid_system_available": False,
+            "error": f"Hybrid processor not available: {str(e)}",
+            "health_metadata": {
+                "check_timestamp": datetime.now().isoformat(),
+                "error_occurred": True,
+                "tool_name": "get_hybrid_system_health"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Hybrid system health check error: {e}")
+        return {
+            "overall_health": "unhealthy", 
+            "hybrid_system_available": False,
+            "error": str(e),
+            "health_metadata": {
+                "check_timestamp": datetime.now().isoformat(),
+                "error_occurred": True,
+                "tool_name": "get_hybrid_system_health"
             }
         }
 
