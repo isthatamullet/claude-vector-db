@@ -83,3 +83,11 @@ README.md.*
 script-output.txt
 verification_results.json
 archive/
+
+# Development artifacts and temporary command files
+database_integrity_report.json
+emergency_rollback.sh
+full_rebuild_command.txt
+full_rebuild_command_fixed.txt
+requirements-development.txt
+requirements-production.txt
