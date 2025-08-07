@@ -14,8 +14,11 @@ import os
 from typing import List, Dict, Any
 from datetime import datetime
 
-# Add path for imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Get package root directory (2 levels up from tests/integration/)
+from pathlib import Path
+PACKAGE_ROOT = Path(__file__).parent.parent.parent
+if str(PACKAGE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PACKAGE_ROOT))
 
 try:
     # Add the mcp directory to path

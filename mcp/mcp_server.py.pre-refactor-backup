@@ -18,32 +18,24 @@ import time
 import hashlib
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Union
-
-# Phase 3: Standardized environment setup
-try:
-    from system.setup_environment import setup_vector_db_environment, validate_environment
-    setup_vector_db_environment()
-except ImportError:
-    # Fallback for basic environment setup if setup_environment module not available
-    import os
-    os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
-    os.environ.setdefault('HF_HUB_OFFLINE', '1')
-    os.environ.setdefault('HF_HUB_DISABLE_TELEMETRY', '1')
 from datetime import datetime, timedelta
 from dataclasses import dataclass, asdict
 from collections import OrderedDict
 import pytz
 
-# Ensure we can import from the package root
-# Get package root directory  
-PACKAGE_ROOT = Path(__file__).parent.parent
-if str(PACKAGE_ROOT) not in sys.path:
-    sys.path.insert(0, str(PACKAGE_ROOT))
+# Add base path to sys.path for package imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import existing vector database components
 from database.vector_database import ClaudeVectorDatabase
 from database.conversation_extractor import ConversationExtractor
 from processing.enhanced_processor import UnifiedEnhancementProcessor, ProcessingContext
+
+# Import batched sync functionality  
+# Add processing directory to path for batched sync imports
+processing_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'processing')
+if processing_dir not in sys.path:
+    sys.path.insert(0, processing_dir)
 
 # Import real-time learning implementation (Fix for recursive call bug)
 from database.enhanced_context import get_realtime_learning_insights as get_realtime_insights_impl

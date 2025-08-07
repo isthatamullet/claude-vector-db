@@ -1,0 +1,17 @@
+{
+  "required_variables": {
+    "TRANSFORMERS_OFFLINE": "1",
+    "HF_HUB_OFFLINE": "1",
+    "HF_HUB_DISABLE_TELEMETRY": "1"
+  },
+  "optional_variables": {
+    "VECTOR_DB_LOG_LEVEL": "INFO",
+    "VECTOR_DB_MAX_MEMORY": "2048",
+    "VECTOR_DB_CACHE_SIZE": "1000"
+  },
+  "paths": {
+    "database_path": "./chroma_db",
+    "config_path": "./config",
+    "logs_path": "./logs"
+  }
+}

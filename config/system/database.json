@@ -1,0 +1,18 @@
+{
+  "chromadb": {
+    "persist_directory": "./chroma_db",
+    "client_type": "PersistentClient",
+    "collection_name": "claude_conversations",
+    "embedding_function": "default",
+    "settings": {
+      "anonymized_telemetry": false,
+      "allow_reset": false
+    }
+  },
+  "performance": {
+    "batch_size": 100,
+    "max_connections": 10,
+    "connection_timeout": 30,
+    "query_timeout": 5
+  }
+}

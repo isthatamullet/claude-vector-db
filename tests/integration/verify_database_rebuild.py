@@ -13,8 +13,10 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List
 
-# Add base path to sys.path for package imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Get package root directory (2 levels up from tests/integration/)
+PACKAGE_ROOT = Path(__file__).parent.parent.parent
+if str(PACKAGE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PACKAGE_ROOT))
 
 from database.vector_database import ClaudeVectorDatabase
 from system.central_logging import VectorDatabaseLogger

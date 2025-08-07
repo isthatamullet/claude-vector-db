@@ -320,6 +320,56 @@ tests/
 - **Recovery Systems**: Comprehensive sync and back-fill capabilities
 - **Advanced Analytics**: Real-time monitoring with A/B testing framework
 
+## 📁 Enhanced Directory Structure (Phase 2 Complete)
+
+### Organized Directory Layout
+
+**Test Organization:**
+- `tests/integration/` - Integration test files (formerly root test_*.py files)
+- `tests/unit/` - Unit test organization (prepared for future expansion)
+- `tests/performance/` - Performance-specific tests (prepared for expansion)
+
+**Documentation Organization:**
+- `docs/implementation/` - PRP-*.md implementation documentation
+- `docs/reports/` - Status reports and project summaries  
+- `docs/legacy/` - Historical and completed documentation
+- `docs/api/` - API documentation and tool references
+
+**System Organization (Unchanged):**
+- `system/tests/` - System-specific comprehensive test suite
+- `database/` - Core database and extraction components
+- `processing/` - Enhancement engines and orchestration
+- `mcp/` - MCP server and tool implementations
+
+### Key Reorganization Benefits
+
+**Improved Organization:**
+- Clear separation of test types and documentation categories
+- Enhanced navigability and maintenance
+- Professional project structure alignment
+- Reduced root directory clutter
+
+**Preserved Functionality:**
+- All test files maintain full import compatibility
+- MCP server and core components unchanged  
+- System functionality completely preserved
+- Enhanced import path safety implementations
+
+### Updated Development Commands
+
+```bash
+# Run integration tests (formerly root tests)
+cd tests/integration && python3 test_*.py
+
+# Run comprehensive system tests (unchanged)
+cd system/tests && ./run_comprehensive_tests.py
+
+# Access organized documentation
+ls docs/implementation/  # PRP documentation
+ls docs/reports/         # Status reports  
+ls docs/legacy/          # Historical documentation
+```
+
 ## Common Development Patterns
 
 ### Health Monitoring

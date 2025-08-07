@@ -1,0 +1,17 @@
+# Development Requirements for Claude Vector Database System
+# Phase 3 Configuration Optimization - Development and testing tools
+
+# Include production requirements
+-r requirements-production.txt
+
+# Testing framework
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Code quality
+ruff==0.1.6
+mypy==1.6.1
+
+# Development tools
+ipython==8.17.2
+jupyter==1.0.0

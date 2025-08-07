@@ -1,0 +1,17 @@
+{
+  "server": {
+    "name": "Claude Code Vector Database",
+    "version": "2.0.0",
+    "max_tools": 17,
+    "timeout": 120
+  },
+  "tools": {
+    "search_timeout": 5,
+    "enhancement_timeout": 30,
+    "health_check_timeout": 10
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  }
+}

@@ -20,6 +20,11 @@ logs/
 backups/
 *.backup
 *.bak
+*.tar.gz
+*backup*/
+migration_backup/
+.phase*-checkpoints/
+.phase*-config-backup/
 
 # IDE
 .vscode/
@@ -37,6 +42,13 @@ test_*.py
 temp/
 tmp/
 *.tmp
+
+# Large data files
+*.json.large
+*scan_missing_*.json
+update_results/
+archive/
+*.pickle
 
 # Keep important test files that are part of the system
 !test_all_sessions.py

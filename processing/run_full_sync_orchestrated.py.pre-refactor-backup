@@ -21,11 +21,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
-# Ensure we can import from the package root
-# Get package root directory
-PACKAGE_ROOT = Path(__file__).parent.parent
-if str(PACKAGE_ROOT) not in sys.path:
-    sys.path.insert(0, str(PACKAGE_ROOT))
+# Add base path to sys.path for package imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import core processing components
 from database.conversation_extractor import ConversationExtractor
