@@ -76,3 +76,10 @@ reorganization.log
 
 # Documentation that's not needed for system operation
 CLAUDE.md
+
+# Additional cleanup: backup files, archives, and temporary outputs
+README.md.*
+*.tar.gz
+script-output.txt
+verification_results.json
+archive/
