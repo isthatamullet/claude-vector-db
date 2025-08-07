@@ -103,3 +103,6 @@ docs/
 # Test files and development results (not required for system operation)
 tests/
 update_results/
+
+# Database maintenance and incremental update tools (not required for system operation)
+incremental_updates/
