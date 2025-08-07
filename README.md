@@ -36,7 +36,31 @@ This system automatically indexes Claude Code conversation history using **hooks
 - **Python 3.12**: Modern Python with virtual environment isolation
 - **Unified Enhancement Engine**: PRP-based orchestrator for all enhancement systems
 
-## 🚀 Quick Start
+## 🚀 Quick Setup
+
+### Prerequisites
+- Python 3.8+ 
+- Git
+
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/isthatamullet/claude-vector-db.git
+cd claude-vector-db
+
+# Set up virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Validate system completeness
+python validate_system_completeness.py
+
+# Run health check
+bash system/health_dashboard.sh
+```
 
 ### MCP Integration (Current System)
 

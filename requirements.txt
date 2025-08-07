@@ -1,0 +1,20 @@
+# Claude Vector Database System - Core Dependencies
+# Install with: pip install -r requirements.txt
+
+# Vector Database Core
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
+
+# MCP Server Framework  
+fastmcp>=0.9.0
+
+# Data Processing & ML
+numpy>=1.24.0
+pandas>=2.0.0
+
+# System Monitoring (optional but recommended)
+psutil>=5.9.0
+
+# Development Tools (optional)
+# pytest>=7.0.0
+# ruff>=0.1.0
