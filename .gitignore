@@ -91,3 +91,8 @@ full_rebuild_command.txt
 full_rebuild_command_fixed.txt
 requirements-development.txt
 requirements-production.txt
+
+# Development backup folders  
+07312025-metadata-enhancement-docs/
+migration_backup/
+reorganization_backup/
