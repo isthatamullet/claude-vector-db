@@ -96,3 +96,6 @@ requirements-production.txt
 07312025-metadata-enhancement-docs/
 migration_backup/
 reorganization_backup/
+
+# Documentation folder (user guides, not required for system operation)
+docs/
