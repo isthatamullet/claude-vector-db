@@ -99,3 +99,7 @@ reorganization_backup/
 
 # Documentation folder (user guides, not required for system operation)
 docs/
+
+# Test files and development results (not required for system operation)
+tests/
+update_results/
