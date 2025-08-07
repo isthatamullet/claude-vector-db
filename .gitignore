@@ -61,3 +61,18 @@ archive/
 # Personal notes that shouldn't be public
 tylers-*.txt
 *-notes.txt
+
+# Development and refactoring artifacts (completed work)
+refactor/
+bugs-and-fixes/
+mcp-tool-consolidation/
+PRPs/
+
+# Development cache and temporary files
+.mypy_cache/
+*.log
+sync_output.log
+reorganization.log
+
+# Documentation that's not needed for system operation
+CLAUDE.md
