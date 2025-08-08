@@ -106,6 +106,7 @@ reorganization_backup/
 
 # Documentation folder (user guides, not required for system operation)
 docs/
+structured-intelligence-extraction-enhancement/
 
 # Test files and development results (not required for system operation)
 tests/

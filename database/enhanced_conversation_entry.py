@@ -63,6 +63,32 @@ class SemanticValidationFields:
 
 
 @dataclass
+class HybridExtractionFields:
+    """
+    Hybrid spaCy + Sentence Transformers extraction fields for structured intelligence.
+    
+    Extends the existing enhancement system with sophisticated NLP-powered extraction:
+    - spaCy Named Entity Recognition for precise entity extraction
+    - Sentence Transformers semantic similarity for pattern classification
+    - Claude Code domain-specific tool and framework detection
+    - ML-powered confidence scoring for quality assessment
+    """
+    # Core hybrid extraction results (JSON strings for ChromaDB compatibility)
+    spacy_entities: str = "[]"                        # JSON: spaCy NER results with confidence scores
+    technical_tools: str = "[]"                       # JSON: Extracted Claude Code tools (Edit, Bash, etc.)
+    framework_mentions: str = "[]"                    # JSON: Technology stack mentions (React, TypeScript, etc.)
+    
+    # Semantic pattern similarity scores (0.0-1.0)
+    solution_similarity_score: float = 0.0           # Similarity to solution pattern templates
+    feedback_similarity_score: float = 0.0           # Similarity to positive feedback patterns
+    error_similarity_score: float = 0.0              # Similarity to error/problem patterns
+    
+    # Pattern matching results
+    best_pattern_match: str = ""                      # Closest matching template pattern
+    hybrid_confidence: float = 0.0                   # Combined ML confidence score (0.0-1.0)
+
+
+@dataclass
 class EnhancedConversationEntry(ConversationEntry):
     """
     Enhanced conversation entry with context awareness and feedback learning.
@@ -99,6 +125,9 @@ class EnhancedConversationEntry(ConversationEntry):
     
     # NEW: Semantic validation enhancement
     semantic_validation: SemanticValidationFields = field(default_factory=SemanticValidationFields)
+    
+    # NEW: Hybrid spaCy + Sentence Transformers extraction fields
+    hybrid_data: HybridExtractionFields = field(default_factory=HybridExtractionFields)
     
     # Context chain relationships  
     is_solution_attempt: bool = False
@@ -157,6 +186,15 @@ class EnhancedConversationEntry(ConversationEntry):
         
         if self.semantic_validation.pattern_vs_semantic_agreement < 0.0 or self.semantic_validation.pattern_vs_semantic_agreement > 1.0:
             raise ValueError(f"Pattern vs semantic agreement {self.semantic_validation.pattern_vs_semantic_agreement} out of range [0.0, 1.0]")
+        
+        # Validate hybrid extraction fields
+        if (self.hybrid_data.solution_similarity_score < 0.0 or self.hybrid_data.solution_similarity_score > 1.0 or
+            self.hybrid_data.feedback_similarity_score < 0.0 or self.hybrid_data.feedback_similarity_score > 1.0 or
+            self.hybrid_data.error_similarity_score < 0.0 or self.hybrid_data.error_similarity_score > 1.0):
+            raise ValueError("Hybrid similarity scores must be in range [0.0, 1.0]")
+        
+        if self.hybrid_data.hybrid_confidence < 0.0 or self.hybrid_data.hybrid_confidence > 1.0:
+            raise ValueError(f"Hybrid confidence {self.hybrid_data.hybrid_confidence} out of range [0.0, 1.0]")
     
     def get_topic_summary(self) -> str:
         """Get a human-readable summary of detected topics"""
@@ -323,8 +361,25 @@ class EnhancedConversationEntry(ConversationEntry):
             "semantic_analysis_details": self.semantic_validation.semantic_analysis_details
         }
         
-        # Combine base metadata with semantic validation fields
-        return {**base_metadata, **semantic_fields}
+        # Add hybrid extraction fields
+        hybrid_fields = {
+            # Core hybrid extraction results
+            "spacy_entities": self.hybrid_data.spacy_entities,
+            "technical_tools": self.hybrid_data.technical_tools,
+            "framework_mentions": self.hybrid_data.framework_mentions,
+            
+            # Semantic pattern similarity scores
+            "hybrid_solution_similarity": self.hybrid_data.solution_similarity_score,
+            "hybrid_feedback_similarity": self.hybrid_data.feedback_similarity_score,
+            "hybrid_error_similarity": self.hybrid_data.error_similarity_score,
+            
+            # Pattern matching results
+            "hybrid_best_pattern_match": self.hybrid_data.best_pattern_match,
+            "hybrid_confidence": self.hybrid_data.hybrid_confidence
+        }
+        
+        # Combine base metadata with semantic validation and hybrid fields
+        return {**base_metadata, **semantic_fields, **hybrid_fields}
     
     @classmethod
     def from_base_entry(cls, base_entry: ConversationEntry, **enhancement_kwargs) -> 'EnhancedConversationEntry':

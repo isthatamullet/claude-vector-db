@@ -44,7 +44,10 @@ from database.enhanced_context import (
     TROUBLESHOOTING_INDICATORS
 )
 
-from database.enhanced_conversation_entry import EnhancedConversationEntry, SemanticValidationFields
+from database.enhanced_conversation_entry import EnhancedConversationEntry, SemanticValidationFields, HybridExtractionFields
+
+# Import hybrid processor for Component #8
+from processing.hybrid_spacy_st_processor import HybridSpacySTProcessor
 
 # Import optimized semantic validation components
 from processing.multimodal_analysis_pipeline import MultiModalAnalysisPipeline
@@ -83,7 +86,8 @@ class UnifiedEnhancementProcessor:
     
     def __init__(self, 
                  suppress_init_logging: bool = False,
-                 shared_embedding_model: Optional[Union['SentenceTransformer', None]] = None):
+                 shared_embedding_model: Optional[Union['SentenceTransformer', None]] = None,
+                 **kwargs):
         """
         Initialize unified enhancement processor with shared model optimization.
         
@@ -143,13 +147,34 @@ class UnifiedEnhancementProcessor:
             self.multimodal_pipeline = None
             self._semantic_validation_available = False
         
+        # NEW: Initialize hybrid spaCy + ST processor (Component #8)
+        self.hybrid_enabled = kwargs.get('enable_hybrid', True)
+        if self.hybrid_enabled:
+            try:
+                self.hybrid_processor = HybridSpacySTProcessor(
+                    shared_embedding_model=self.shared_model  # Reuse existing model
+                )
+                self._hybrid_available = True
+                if not suppress_init_logging:
+                    logger.info("🔍 Hybrid spaCy+ST processor initialized")
+            except Exception as e:
+                if not suppress_init_logging:
+                    logger.warning(f"⚠️ Hybrid processor unavailable: {e}")
+                self.hybrid_processor = None
+                self._hybrid_available = False
+        else:
+            self.hybrid_processor = None
+            self._hybrid_available = False
+        
         # Performance statistics
+        components_available = 7 + (1 if self._hybrid_available else 0)
         self.stats = {
             'entries_processed': 0,
             'average_processing_time_ms': 0.0,
-            'components_available': 7,  # All 7 enhancement components
-            'components_enabled': 7,
+            'components_available': components_available,  # Up to 8 enhancement components
+            'components_enabled': components_available,
             'semantic_validation_available': self._semantic_validation_available,
+            'hybrid_processing_available': self._hybrid_available,
             'using_shared_model': self._using_shared_model,
             'enhancement_breakdown': {
                 'topics_detected': 0,
@@ -158,14 +183,16 @@ class UnifiedEnhancementProcessor:
                 'adjacency_relationships': 0,
                 'troubleshooting_contexts': 0,
                 'realtime_learning_applied': 0,
-                'validation_patterns_learned': 0
+                'validation_patterns_learned': 0,
+                'hybrid_extractions': 0
             }
         }
         
         component_info = "shared model" if self._using_shared_model else "individual models"
         semantic_info = "enabled" if self._semantic_validation_available else "disabled"
+        hybrid_info = "enabled" if self._hybrid_available else "disabled"
         
-        logger.info(f"✅ UnifiedEnhancementProcessor initialized with 7 components ({component_info}, semantic validation {semantic_info})")
+        logger.info(f"✅ UnifiedEnhancementProcessor initialized with {components_available} components ({component_info}, semantic validation {semantic_info}, hybrid processing {hybrid_info})")
     
     def process_conversation_entry(self, 
                                  entry_data: Dict[str, Any],
@@ -328,6 +355,20 @@ class UnifiedEnhancementProcessor:
             if is_validated_solution or is_refuted_attempt:
                 self.stats['enhancement_breakdown']['validation_patterns_learned'] += 1
             
+            # Enhancement 8: Hybrid spaCy + ST Intelligence Extraction (NEW)
+            hybrid_data = HybridExtractionFields()
+            if self._hybrid_available and len(content) > 20:
+                try:
+                    hybrid_results = self.hybrid_processor.extract_intelligence(content)
+                    hybrid_data = HybridExtractionFields(**hybrid_results)
+                    
+                    # Update stats
+                    if hybrid_results['hybrid_confidence'] > 0.5:
+                        self.stats['enhancement_breakdown']['hybrid_extractions'] += 1
+                except Exception as e:
+                    logger.debug(f"Hybrid extraction failed: {e}")
+                    # Keep default empty hybrid_data
+            
             # Create enhanced conversation entry with complete semantic validation
             enhanced_entry = EnhancedConversationEntry(
                 id=entry_id,
@@ -362,7 +403,10 @@ class UnifiedEnhancementProcessor:
                 realtime_learning_boost=realtime_learning_boost,
                 
                 # NEW: Complete semantic validation fields
-                semantic_validation=semantic_validation
+                semantic_validation=semantic_validation,
+                
+                # NEW: Hybrid spaCy + ST extraction results
+                hybrid_data=hybrid_data
             )
             
             # Update performance statistics
@@ -374,11 +418,13 @@ class UnifiedEnhancementProcessor:
             self.stats['average_processing_time_ms'] = total_time / self.stats['entries_processed']
             
             # Log successful processing
+            enhancements_applied = 7 + (1 if self._hybrid_available else 0)
             self.logger.log_entry_processing(entry_id, "success", {
                 "processing_time_ms": processing_time_ms,
-                "enhancements_applied": 7,
+                "enhancements_applied": enhancements_applied,
                 "topic_detected": bool(primary_topic),
-                "solution_detected": bool(is_solution_attempt)
+                "solution_detected": bool(is_solution_attempt),
+                "hybrid_extraction": bool(self._hybrid_available and hybrid_data.hybrid_confidence > 0)
             })
             
             return enhanced_entry
@@ -421,7 +467,10 @@ class UnifiedEnhancementProcessor:
                 realtime_learning_boost=1.0,
                 
                 # Default semantic validation fields
-                semantic_validation=SemanticValidationFields()
+                semantic_validation=SemanticValidationFields(),
+                
+                # Default hybrid extraction fields
+                hybrid_data=HybridExtractionFields()
             )
     
     def get_processor_stats(self) -> Dict[str, Any]:
@@ -543,8 +592,8 @@ def process_hook_entry(hook_input: Dict, session_id: str, cwd: str,
     Returns:
         EnhancedConversationEntry with all enhancements applied
     """
-    # Create processor with optimized shared model
-    processor = UnifiedEnhancementProcessor(suppress_init_logging=True)
+    # Create processor with optimized shared model and hybrid enabled
+    processor = UnifiedEnhancementProcessor(suppress_init_logging=True, enable_hybrid=True)
     
     # Extract content and normalize metadata
     content = hook_input.get('content', '')
