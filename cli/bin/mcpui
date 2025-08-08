@@ -1,0 +1,229 @@
+#!/usr/bin/env node
+
+/**
+ * MCPUI - Professional CLI Interface for Claude Vector Database MCP Tools
+ * Main CLI executable with Terminal Kit UI for all 20+ MCP tools
+ */
+
+const { Command } = require('commander');
+const chalk = require('chalk');
+const { defaultClient } = require('../lib/mcp-client');
+
+// Import command modules
+const { searchConversations, hybridSearch } = require('../lib/commands/search');
+const { systemStatus, performanceAnalytics, hybridSystemHealth } = require('../lib/commands/health');
+const { forceSync, unifiedEnhancement, backfillChains, metadataStatus } = require('../lib/commands/processing');
+
+const program = new Command();
+
+// Program configuration
+program
+  .name('mcpui')
+  .description('Professional CLI interface for Claude Vector Database MCP tools with Terminal Kit UI')
+  .version('1.0.0')
+  .option('--server <url>', 'MCP server URL', 'http://localhost:3001')
+  .option('--timeout <ms>', 'Request timeout in milliseconds', '60000');
+
+// Global error handler
+process.on('uncaughtException', (error) => {
+  console.error(chalk.red('\n❌ Unexpected error:'), error.message);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (error) => {
+  console.error(chalk.red('\n❌ Unhandled promise rejection:'), error.message);
+  process.exit(1);
+});
+
+// ===== SEARCH & RETRIEVAL COMMANDS =====
+
+program
+  .command('search')
+  .description('Semantic conversation search with enhanced UI')
+  .argument('<query>', 'Search query')
+  .option('-p, --project <name>', 'Project context for relevance boosting')
+  .option('-m, --mode <mode>', 'Search mode (semantic, validated_only, failed_only, by_topic)', 'semantic')
+  .option('-l, --limit <number>', 'Maximum number of results', '5')
+  .option('--code-only', 'Filter to conversations containing code only')
+  .option('--no-validation-boost', 'Disable validation boost')
+  .option('--no-adaptive-learning', 'Disable adaptive learning')
+  .option('--context-chains', 'Include conversation context chains')
+  .option('--hybrid', 'Enable hybrid intelligence filtering')
+  .option('--tool-filter <tool>', 'Filter by specific Claude Code tool')
+  .option('--framework-filter <framework>', 'Filter by framework (React, TypeScript, etc.)')
+  .option('--min-confidence <number>', 'Minimum confidence threshold (0.0-1.0)')
+  .option('--pattern-type <type>', 'Pattern type (solution, feedback, error)')
+  .action(searchConversations);
+
+program
+  .command('hybrid-search')
+  .description('AI-enhanced search with spaCy + Sentence Transformers filtering')
+  .argument('<query>', 'Search query')
+  .option('-p, --project <name>', 'Project context')
+  .option('--tool-filter <tool>', 'Filter by Claude Code tool (Edit, Bash, Read, etc.)')
+  .option('--framework-filter <framework>', 'Filter by technology (React, TypeScript, Python, etc.)')
+  .option('--min-confidence <number>', 'Minimum ML confidence threshold', '0.7')
+  .option('--pattern-type <type>', 'Pattern type filter (solution, feedback, error)')
+  .option('-l, --limit <number>', 'Maximum results', '5')
+  .action(hybridSearch);
+
+// ===== HEALTH & ANALYTICS COMMANDS =====
+
+program
+  .command('health')
+  .alias('status')
+  .description('System health dashboard with comprehensive analytics')
+  .option('-t, --type <type>', 'Status type (basic, comprehensive, performance)', 'comprehensive')
+  .option('--no-analytics', 'Exclude analytics dashboard data')
+  .option('--no-enhancement', 'Exclude enhancement metrics')
+  .option('--no-semantic', 'Exclude semantic validation health')
+  .option('-f, --format <format>', 'Output format (detailed, summary)', 'detailed')
+  .action(systemStatus);
+
+program
+  .command('performance')
+  .description('Real-time performance monitoring dashboard')
+  .option('--time-range <range>', 'Time range (1h, 24h, 7d, 30d)', '24h')
+  .option('--component <name>', 'Focus on specific component (search, cache, etc.)')
+  .option('--metrics <type>', 'Metrics type (performance, comprehensive)', 'comprehensive')
+  .action(performanceAnalytics);
+
+program
+  .command('hybrid-health')
+  .description('Hybrid spaCy + Sentence Transformers system health')
+  .option('--no-models', 'Skip model validation')
+  .option('--no-accuracy', 'Skip accuracy testing')
+  .option('--no-performance', 'Skip performance checks')
+  .action(hybridSystemHealth);
+
+// ===== PROCESSING & SYNC COMMANDS =====
+
+program
+  .command('sync')
+  .description('Full database synchronization with progress tracking')
+  .option('--full-rebuild', 'Complete rebuild from scratch')
+  .option('--no-parallel', 'Disable parallel processing')
+  .option('--file-path <path>', 'Process specific file only')
+  .option('--no-enhancement', 'Disable metadata enhancements')
+  .action(forceSync);
+
+program
+  .command('enhance')
+  .description('Run unified enhancement pipeline')
+  .option('-s, --session-id <id>', 'Process specific session ID only')
+  .option('--no-backfill', 'Disable conversation chain backfill')
+  .option('--no-optimization', 'Disable field optimization')
+  .option('--no-validation', 'Disable semantic validation')
+  .option('--max-sessions <number>', 'Maximum sessions to process')
+  .option('--reprocess-fields <fields>', 'Comma-separated fields to reprocess')
+  .option('--no-backup', 'Skip backup creation')
+  .action(unifiedEnhancement);
+
+program
+  .command('backfill')
+  .description('Conversation chain relationship backfill')
+  .option('-s, --session-id <id>', 'Process specific session only')
+  .option('-l, --limit <number>', 'Maximum sessions to process', '10')
+  .option('--field-types <types>', 'Field types to backfill (chains, feedback, all)', 'chains')
+  .action(backfillChains);
+
+program
+  .command('metadata-status')
+  .description('Enhanced metadata coverage analysis')
+  .option('-t, --type <type>', 'Analysis type (basic, comprehensive)', 'comprehensive')
+  .option('--no-recommendations', 'Exclude optimization recommendations')
+  .option('--export <format>', 'Export format (json, csv)')
+  .option('--detailed', 'Show detailed field-by-field analysis')
+  .action(metadataStatus);
+
+// ===== UTILITY COMMANDS =====
+
+program
+  .command('test-connection')
+  .description('Test connection to MCP server')
+  .action(async () => {
+    console.log(chalk.blue('🔍 Testing MCP server connection...'));
+    
+    try {
+      const isAlive = await defaultClient.isServerAlive();
+      if (isAlive) {
+        console.log(chalk.green('✅ MCP server is responding'));
+        
+        const health = await defaultClient.getHealth();
+        console.log(`📊 Server status: ${health.status || 'unknown'}`);
+        
+        const tools = await defaultClient.listTools();
+        console.log(`🔧 Available tools: ${tools.length}`);
+        
+      } else {
+        console.log(chalk.red('❌ MCP server is not responding'));
+        console.log(chalk.yellow('💡 Make sure your Python MCP server is running'));
+      }
+    } catch (error) {
+      console.error(chalk.red('❌ Connection test failed:'), error.message);
+    }
+  });
+
+program
+  .command('list-tools')
+  .description('List all available MCP tools')
+  .action(async () => {
+    try {
+      console.log(chalk.blue('🔍 Fetching available MCP tools...'));
+      const tools = await defaultClient.listTools();
+      
+      console.log(chalk.green(`\n✅ Found ${tools.length} tools:\n`));
+      tools.forEach((tool, index) => {
+        console.log(`${index + 1}. ${chalk.cyan(tool.name || tool)}`);
+        if (tool.description) {
+          console.log(`   ${chalk.dim(tool.description)}`);
+        }
+      });
+      console.log();
+      
+    } catch (error) {
+      console.error(chalk.red('❌ Failed to list tools:'), error.message);
+    }
+  });
+
+// ===== HELP AND EXAMPLES =====
+
+program
+  .command('examples')
+  .description('Show usage examples for common operations')
+  .action(() => {
+    console.log(chalk.blue.bold('\n🚀 MCPUI Usage Examples\n'));
+    
+    console.log(chalk.yellow('Search Operations:'));
+    console.log('  mcpui search "React performance optimization"');
+    console.log('  mcpui search "database error" --project myproject --mode validated_only');
+    console.log('  mcpui hybrid-search "TypeScript issues" --tool-filter Edit --min-confidence 0.8');
+    
+    console.log(chalk.yellow('\nHealth Monitoring:'));
+    console.log('  mcpui health --comprehensive');
+    console.log('  mcpui performance --time-range 7d');
+    console.log('  mcpui hybrid-health');
+    
+    console.log(chalk.yellow('\nProcessing Operations:'));
+    console.log('  mcpui sync --full-rebuild');
+    console.log('  mcpui enhance --session-id abc123');
+    console.log('  mcpui backfill --limit 50');
+    console.log('  mcpui metadata-status --detailed --export csv');
+    
+    console.log(chalk.yellow('\nUtility Commands:'));
+    console.log('  mcpui test-connection');
+    console.log('  mcpui list-tools');
+    console.log('  mcpui examples\n');
+    
+    console.log(chalk.dim('💡 All commands support --help for detailed options'));
+  });
+
+// Parse command line arguments
+program.parse();
+
+// Show help if no command provided
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+  console.log(chalk.blue('\n💡 Run "mcpui examples" to see usage examples'));
+  console.log(chalk.dim('   Run "mcpui test-connection" to verify MCP server connectivity'));
+}

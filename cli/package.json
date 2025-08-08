@@ -1,0 +1,37 @@
+{
+  "name": "claude-vector-db-cli",
+  "version": "1.0.0",
+  "description": "Professional CLI interface for Claude Vector Database MCP tools with Terminal Kit UI",
+  "main": "index.js",
+  "bin": {
+    "mcpui": "./bin/mcpui"
+  },
+  "scripts": {
+    "start": "node bin/mcpui",
+    "test": "node test/test-connection.js",
+    "health-check": "node bin/mcpui health --quick"
+  },
+  "keywords": [
+    "claude",
+    "mcp",
+    "vector-database",
+    "cli",
+    "terminal-kit",
+    "ui"
+  ],
+  "author": "Claude Code Vector Database System",
+  "license": "MIT",
+  "dependencies": {
+    "terminal-kit": "^3.0.1",
+    "axios": "^1.6.0",
+    "commander": "^11.1.0",
+    "chalk": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "local"
+  }
+}
