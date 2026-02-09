@@ -114,3 +114,14 @@ update_results/
 
 # Database maintenance and incremental update tools (not required for system operation)
 incremental_updates/
+
+# ARCHIVAL: Un-ignore documentation and tests for repo preservation (Feb 2026)
+# These were excluded during active development but should be preserved
+# before the local directory is deleted.
+!docs/
+!docs/**
+!system/docs/
+!system/docs/**
+!tests/
+!tests/**
+!CLAUDE.md

@@ -1235,7 +1235,7 @@ async def search_conversations_unified(
                 }
             }]
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def get_project_context_summary(
     project_name: Optional[str] = None,
     days_back: int = 30
@@ -1295,7 +1295,7 @@ async def get_project_context_summary(
         logger.error(f"Context summary error: {e}")
         return {"error": str(e), "project_name": project_name}
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def detect_current_project() -> Dict[str, Any]:
     """
     Detect the current project based on working directory
@@ -1994,7 +1994,7 @@ def check_file_indexed_status(file_path: Path, db: ClaudeVectorDatabase) -> str:
         logger.warning(f"Error checking file {file_path.name}: {e}")
         return "needs_reindex"  # Default to safe reprocessing
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def force_conversation_sync(parallel_processing: bool = True, file_path: Optional[str] = None) -> Dict[str, Any]:
     """
     Complete Enhanced Force Sync with 3-Phase Processing Architecture
@@ -2123,7 +2123,7 @@ async def force_conversation_sync(parallel_processing: bool = True, file_path: O
             "timestamp": datetime.now().isoformat()
         }
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def backfill_conversation_chains(session_id: Optional[str] = None, 
                                      limit: int = 10,
                                      field_types: str = "chains") -> Dict[str, Any]:
@@ -2361,7 +2361,7 @@ def determine_overall_health(watcher_status: Dict, processor_status: Dict, recov
 
 # Smart Metadata Sync Tools
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def smart_metadata_sync_status() -> Dict[str, Any]:
     """
     Check current enhanced metadata status of the database.
@@ -2874,7 +2874,7 @@ async def run_enhancement_ab_test(
             }
         }
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def get_learning_insights(
     insight_type: str = "comprehensive",  # "validation", "adaptive", "ab_testing", "realtime", "comprehensive"
     user_id: Optional[str] = None,
@@ -3085,7 +3085,7 @@ async def get_ab_testing_insights() -> Dict[str, Any]:
 
 # PRP-3 CONSOLIDATION: Unified Learning & Validation Tools
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def process_feedback_unified(
     feedback_text: str,
     solution_context: Dict[str, Any],
@@ -3439,7 +3439,7 @@ async def search_with_validation_boost(
 
 # Context Chain Functionality MCP Tools
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def get_conversation_context_chain(
     message_id: str,
     chain_length: int = 5,
@@ -3610,7 +3610,7 @@ async def search_with_context_chains(
         logger.error(f"Error in context-aware search: {e}")
         return [{"error": str(e), "query": query}]
 
-@mcp.tool() 
+# @mcp.tool()  # DISABLED - context optimization
 async def analyze_solution_feedback_patterns(
     project_context: Optional[str] = None,
     limit: int = 10,
@@ -3799,7 +3799,7 @@ async def get_realtime_learning_insights() -> Dict[str, Any]:
 
 # Unified Enhancement Engine MCP Tools
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def run_unified_enhancement(
     session_id: Optional[str] = None,
     enable_backfill: bool = True,
@@ -4621,7 +4621,7 @@ async def get_performance_analytics_dashboard() -> Dict[str, Any]:
             "prp4_dashboard": False
         }
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def configure_enhancement_systems(
     enable_prp1: bool = True,
     enable_prp2: bool = True, 
@@ -4833,7 +4833,7 @@ async def configure_enhancement_systems(
             }
         }
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def analyze_patterns_unified(
     feedback_content: str,
     analysis_type: str = "multimodal",  # "semantic", "technical", "multimodal", "pattern_similarity"
@@ -5317,7 +5317,7 @@ async def run_semantic_validation_ab_test(
             }
         }
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def run_adaptive_learning_enhancement(
     user_id: Optional[str] = None,
     session_id: Optional[str] = None,
@@ -5440,7 +5440,7 @@ async def run_adaptive_learning_enhancement(
             'suggestion': 'Check adaptive learning system health and retry'
         }
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def force_database_connection_refresh() -> Dict[str, Any]:
     """
     TEMPORARY TOOL: Force refresh of MCP server database connections to resolve stale connection issue.
@@ -5934,7 +5934,7 @@ async def search_with_hybrid_intelligence(
             "fallback_message": "Hybrid search failed, consider using search_conversations_unified"
         }
 
-@mcp.tool()
+# @mcp.tool()  # DISABLED - context optimization
 async def analyze_conversation_intelligence(
     conversation_content: str,
     include_entities: bool = True,
